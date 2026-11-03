@@ -65,6 +65,8 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
   }
 }
 
+export const requireAuth = authenticate;
+
 export async function optionalAuth(req: Request, _res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {

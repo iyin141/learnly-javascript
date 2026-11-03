@@ -10,6 +10,9 @@ import { healthRouter } from "./routes/health.js";
 import { authRouter } from "./routes/auth.js";
 import { coursesRouter } from "./routes/courses.js";
 import { docsRouter } from "./routes/docs.js";
+import { uploadsRouter } from "./routes/uploads.js";
+import { builderRouter } from "./routes/builder.js";
+import { adminQueuesRouter } from "./routes/admin-queues.js";
 
 export function createApp(): express.Application {
   const app = express();
@@ -49,6 +52,9 @@ export function createApp(): express.Application {
   app.use("/readyz", healthRouter);
   app.use("/api/auth", authRouter);
   app.use("/api/courses", coursesRouter);
+  app.use("/api/courses", builderRouter);
+  app.use("/api/uploads", uploadsRouter);
+  app.use(adminQueuesRouter);
   app.use("/api/my-courses", (req, res, next) => {
     // Forward /api/my-courses to courses router
     req.url = "/user/enrolled" + (req.url.startsWith("/") ? req.url.slice(1) : req.url);
