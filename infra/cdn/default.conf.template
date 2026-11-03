@@ -1,0 +1,64 @@
+proxy_cache_path /var/cache/nginx/cdn levels=1:2 keys_zone=cdn:50m max_size=5g inactive=1d use_temp_path=off;
+
+server {
+    listen 80;
+
+    location = /cdn-health { access_log off; return 200 "ok\n"; }
+
+    # /cdn/hls/{courseId}/{lessonId}/... -> minio learnly-media/hls/...
+    # Signature: md5=base64url(md5("<expires><uri> ${CDN_SECRET}")), expires=<unix seconds>
+    location /cdn/hls/ {
+        secure_link $arg_md5,$arg_expires;
+        secure_link_md5 "$secure_link_expires$uri ${CDN_SECRET}";
+
+        # Segment requests may also carry the same token via cookie (added in Phase 3).
+        if ($secure_link = "")  { return 403; }
+        if ($secure_link = "0") { return 410; }
+
+        rewrite ^/cdn/(.*)$ /learnly-media/$1 break;
+        proxy_pass http://minio:9000;
+        proxy_set_header Host minio:9000;
+
+        proxy_cache cdn;
+        # cache key excludes the signature so signed URLs share cache entries
+        proxy_cache_key "$uri";
+        proxy_cache_valid 200 206 1d;
+        proxy_cache_lock on;
+        proxy_set_header Range $http_range;
+        proxy_set_header If-Range $http_if_range;
+        proxy_force_ranges on;
+        proxy_ignore_headers Set-Cookie;
+
+        proxy_pass_header Cache-Control;
+        add_header Accept-Ranges bytes always;
+        add_header X-Cache $upstream_cache_status always;
+        add_header Access-Control-Allow-Origin * always;
+    }
+
+    # Playlists get a short TTL
+    location ~ ^/cdn/hls/.+\.m3u8$ {
+        secure_link $arg_md5,$arg_expires;
+        secure_link_md5 "$secure_link_expires$uri ${CDN_SECRET}";
+        if ($secure_link = "")  { return 403; }
+        if ($secure_link = "0") { return 410; }
+
+        rewrite ^/cdn/(.*)$ /learnly-media/$1 break;
+        proxy_pass http://minio:9000;
+        proxy_set_header Host minio:9000;
+        proxy_cache cdn;
+        proxy_cache_key "$uri";
+        proxy_cache_valid 200 10s;
+        add_header X-Cache $upstream_cache_status always;
+        add_header Access-Control-Allow-Origin * always;
+    }
+
+    # Thumbnails and posters are public images
+    location /cdn/thumbs/ {
+        rewrite ^/cdn/(.*)$ /learnly-media/$1 break;
+        proxy_pass http://minio:9000;
+        proxy_set_header Host minio:9000;
+        proxy_cache cdn;
+        proxy_cache_valid 200 1d;
+        add_header X-Cache $upstream_cache_status always;
+    }
+}

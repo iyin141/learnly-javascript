@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"primary-fixed":"#dbe1ff","surface-container-low":"#eff4ff","surface-container-highest":"#d3e4fe","secondary-fixed-dim":"#62df7d","on-primary-container":"#eeefff","on-tertiary-fixed":"#131b2e","inverse-primary":"#b4c5ff","tertiary":"#4d556b","surface":"#f8f9ff","on-primary-fixed-variant":"#003ea8","secondary-fixed":"#7ffc97","surface-container-high":"#dce9ff","on-primary":"#ffffff","background":"#f8f9ff","on-secondary-container":"#007230","surface-container-lowest":"#ffffff","outline-variant":"#c3c6d7","on-error-container":"#93000a","inverse-on-surface":"#eaf1ff","secondary-container":"#7cf994","primary":"#004ac6","inverse-surface":"#213145","surface-bright":"#f8f9ff","tertiary-fixed-dim":"#bec6e0","tertiary-container":"#656d84","on-tertiary-fixed-variant":"#3f465c","on-tertiary-container":"#eef0ff","primary-fixed-dim":"#b4c5ff","surface-variant":"#d3e4fe","on-error":"#ffffff","outline":"#737686","surface-dim":"#cbdbf5","tertiary-fixed":"#dae2fd","on-surface-variant":"#434655","on-secondary-fixed-variant":"#005320","secondary":"#006e2d","on-surface":"#0b1c30","on-primary-fixed":"#00174b","on-secondary-fixed":"#002109","surface-tint":"#0053db","error-container":"#ffdad6","on-secondary":"#ffffff","on-background":"#0b1c30","primary-container":"#2563eb","error":"#ba1a1a","on-tertiary":"#ffffff","surface-container":"#e5eeff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter-sm":"1rem","space-lg":"1.5rem","space-xs":"0.25rem","gutter":"1.5rem","margin":"2rem","space-sm":"0.5rem","space-xl":"2rem","space-md":"1rem","margin-sm":"1rem"},"fontFamily":{"caption":["Inter"],"label-md":["Inter"],"label-sm":["Inter"],"headline-xl-mobile":["Inter"],"headline-md":["Inter"],"headline-xl":["Inter"],"body-lg":["Inter"],"body-md":["Inter"],"headline-lg":["Inter"]},"fontSize":{"caption":["12px",{"lineHeight":"16px","fontWeight":"400"}],"label-md":["14px",{"lineHeight":"20px","fontWeight":"500"}],"label-sm":["12px",{"lineHeight":"16px","letterSpacing":"0.01em","fontWeight":"500"}],"headline-xl-mobile":["28px",{"lineHeight":"36px","letterSpacing":"-0.015em","fontWeight":"700"}],"headline-md":["20px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-xl":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"headline-lg":["24px",{"lineHeight":"32px","letterSpacing":"-0.015em","fontWeight":"600"}]}}}};</script></head><body class="bg-inverse-surface font-body-md text-inverse-on-surface antialiased"><header class="fixed top-0 w-full z-50 bg-inverse-surface/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.3)]"><div class="h-16 w-full px-gutter flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md min-w-0"><div class="flex items-center gap-space-xs"><span class="flex h-2.5 w-2.5 rounded-full bg-error animate-pulse"></span><span class="font-label-sm text-error font-semibold">REC</span></div><div class="h-4 w-px bg-tertiary-container/40"></div><div class="min-w-0 flex items-center gap-space-sm"><span class="font-headline-md text-inverse-on-surface truncate">CS 101: Live Interactive Workshop - Dynamic Tree Pruning</span><span class="hidden md:inline-flex px-2 py-0.5 rounded-full bg-surface-container-highest/20 font-caption text-inverse-on-surface/70 tracking-wider">cs101-meet-7a9</span></div></div><div class="flex items-center gap-space-md flex-shrink-0"><div class="flex items-center gap-space-xs font-label-md text-inverse-on-surface/90"><span class="material-symbols-outlined text-[18px] text-inverse-on-surface/70">schedule</span><span class="font-mono">00:32:15</span></div><div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-tertiary-container/30 font-label-sm text-inverse-on-surface"><span class="material-symbols-outlined text-[16px]">group</span><span>38</span></div><nav class="hidden lg:flex items-center gap-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-lg"><a aria-current="page" class="px-3 py-1.5 transition-colors bg-primary-container text-on-primary-container font-semibold rounded-lg" data-path="live-stage" href="#">Stage</a><a class="px-3 py-1.5 font-label-md text-inverse-on-surface/80 hover:text-inverse-on-surface transition-colors" data-path="live-breakout-rooms" href="#">Breakouts</a><a class="px-3 py-1.5 font-label-md text-inverse-on-surface/80 hover:text-inverse-on-surface transition-colors" data-path="live-whiteboard" href="#">Whiteboard</a><a class="px-3 py-1.5 font-label-md text-inverse-on-surface/80 hover:text-inverse-on-surface transition-colors" data-path="live-session-notes" href="#">Notes</a></nav><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-inverse-surface min-h-[calc(100vh-4rem)] flex flex-col"><div class="flex flex-col w-full h-[calc(100vh-4rem)] overflow-hidden bg-[#111827] text-inverse-on-surface select-none">
+<!-- Sub-Header / Live Room Status Bar (Contextual bar under app shell) -->
+<header class="h-12 px-space-md bg-[#1F2937]/90 backdrop-blur-md flex items-center justify-between gap-space-md z-20 flex-shrink-0 shadow-sm">
+<!-- Left: Room Meta & Copy Code -->
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="font-label-md text-inverse-on-surface font-semibold truncate">CS 101: Live Interactive Workshop</span>
+<span class="text-tertiary-fixed-dim/60 text-xs hidden sm:inline">•</span>
+<span class="font-body-md text-inverse-on-surface/75 truncate hidden md:inline">Dynamic Tree Pruning & Memoization</span>
+</div>
+<button class="ml-1 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#374151]/80 hover:bg-[#374151] text-inverse-on-surface/90 font-mono text-xs transition-colors group" onclick="navigator.clipboard?.writeText('cs101-meet-7a9'); const el = document.getElementById('copied-toast'); el.classList.remove('opacity-0'); setTimeout(()=>el.classList.add('opacity-0'), 1800);">
+<span>cs101-meet-7a9</span>
+<span class="material-symbols-outlined text-[14px] text-inverse-on-surface/60 group-hover:text-inverse-on-surface">content_copy</span>
+</button>
+<div class="opacity-0 transition-opacity duration-200 text-secondary-fixed text-xs font-label-sm" id="copied-toast">Copied!</div>
+</div>
+<!-- Center: Speaker Highlight & Live Pulse -->
+<div class="hidden lg:flex items-center gap-space-sm">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#111827]/90 text-inverse-on-surface shadow-inner">
+<span class="flex h-2 w-2 rounded-full bg-error animate-ping"></span>
+<span class="font-mono font-semibold text-xs tracking-wider text-error">REC • 00:34:12</span>
+</div>
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-inverse-primary font-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary-fixed animate-pulse">volume_up</span>
+<span class="font-semibold">Prof. Alan Vance (Speaking)</span>
+</div>
+</div>
+<!-- Right: Telemetry & Layout Switchers -->
+<div class="flex items-center gap-space-sm flex-shrink-0">
+<div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#374151]/40 text-inverse-on-surface/80 text-xs font-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary-fixed">wifi</span>
+<span>HD 1080p Stable</span>
+</div>
+<div class="flex items-center bg-[#111827] p-0.5 rounded-lg">
+<button class="p-1.5 rounded-md bg-primary text-on-primary transition-all" id="view-screen-btn" onclick="switchStageMode('screen')" title="Screen Share Layout">
+<span class="material-symbols-outlined text-[18px]">present_to_all</span>
+</button>
+<button class="p-1.5 rounded-md text-inverse-on-surface/70 hover:text-inverse-on-surface transition-all" id="view-grid-btn" onclick="switchStageMode('grid')" title="Grid View">
+<span class="material-symbols-outlined text-[18px]">grid_view</span>
+</button>
+<button class="p-1.5 rounded-md text-inverse-on-surface/70 hover:text-inverse-on-surface transition-all" id="view-speaker-btn" onclick="switchStageMode('speaker')" title="Speaker View">
+<span class="material-symbols-outlined text-[18px]">person_pin</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Viewport Workspace: Stage Area + Docked Right Panel -->
+<div class="flex-1 flex min-h-0 relative">
+<!-- Central Stage Area (75% / Fluid Stage Canvas) -->
+<section class="flex-1 flex flex-col p-space-sm lg:p-space-md min-w-0 overflow-hidden relative">
+<!-- Screen Share + Side Filmstrip Layout Container -->
+<div class="w-full h-full flex flex-col lg:flex-row gap-space-sm min-h-0" id="stage-screen-layout">
+<!-- Main Presentation Stage (75% on desktop) -->
+<div class="flex-1 lg:w-3/4 flex flex-col rounded-2xl bg-[#1F2937] overflow-hidden shadow-xl relative min-h-0">
+<!-- Shared Screen Window Header Bar -->
+<div class="h-10 px-4 bg-[#111827]/90 flex items-center justify-between text-xs font-label-sm flex-shrink-0">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-error/80 inline-block"></span>
+<span class="w-3 h-3 rounded-full bg-amber-400/80 inline-block"></span>
+<span class="w-3 h-3 rounded-full bg-secondary-fixed/80 inline-block"></span>
+<span class="ml-2 font-mono text-inverse-on-surface/80 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-primary-fixed-dim">screen_share</span>
+                Prof. Alan Vance: VS Code • memoized_prune.py
+              </span>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary-fixed font-label-sm text-[11px] font-semibold">Active Run: 12ms</span>
+<button class="text-inverse-on-surface/60 hover:text-inverse-on-surface">
+<span class="material-symbols-outlined text-[18px]">fullscreen</span>
+</button>
+</div>
+</div>
+<!-- Screen Share Presentation Content: Code + Recursive Tree Graph -->
+<div class="flex-1 grid grid-cols-1 xl:grid-cols-12 min-h-0 bg-[#0B132B] overflow-hidden">
+<!-- Left Code Editor Mockup (7 cols) -->
+<div class="xl:col-span-7 p-4 font-mono text-xs overflow-y-auto bg-[#0d1527] flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-3 mb-3 bg-tertiary-container/10 px-2 rounded">
+<span class="text-inverse-on-surface/50 font-caption">Algorithm: Top-Down Dynamic Programming with Branch Bounding</span>
+<span class="text-secondary-fixed-dim text-caption font-semibold">Line 18: Cache Hit</span>
+</div>
+<div class="space-y-1 leading-relaxed text-inverse-on-surface/90">
+<div class="text-inverse-on-surface/40"><span class="w-6 inline-block text-right mr-3 text-tertiary">1</span><span class="text-primary-fixed-dim">def</span> <span class="text-secondary-fixed">memoized_prune</span>(node, depth, memo={}):</div>
+<div class="text-inverse-on-surface/40"><span class="w-6 inline-block text-right mr-3 text-tertiary">2</span>    state_key = (node.val, depth)</div>
+<div class="text-inverse-on-surface/40"><span class="w-6 inline-block text-right mr-3 text-tertiary">3</span> <span class="text-primary-fixed-dim">if</span> state_key <span class="text-primary-fixed-dim">in</span> memo:</div>
+<div class="bg-secondary-container/15 -mx-4 px-4 py-0.5 rounded text-secondary-fixed font-semibold"><span class="w-6 inline-block text-right mr-3 text-secondary-fixed/70">4</span> <span class="material-symbols-outlined text-[12px] inline align-middle mr-1">bolt</span><span class="text-primary-fixed-dim">return</span> memo[state_key]  <span class="text-secondary-fixed-dim/80 font-normal italic"># O(1) Pruned cache hit!</span></div>
+<div class="text-inverse-on-surface/40"><span class="w-6 inline-block text-right mr-3 text-tertiary">5</span> <span class="text-primary-fixed-dim">if not</span> node <span class="text-primary-fixed-dim">or</span> depth <= 0:</div>
+<div class="text-inverse-on-surface/40"><span class="w-6 inline-block text-right mr-3 text-tertiary">6</span> <span class="text-primary-fixed-dim">return</span> 0</div>
+<div class="text-inverse-on-surface/40"><span class="w-6 inline-block text-right mr-3 text-tertiary">7</span></div>
+<div class="text-inverse-on-surface/40"><span class="w-6 inline-block text-right mr-3 text-tertiary">8</span> <span class="text-tertiary-fixed-dim"># Compute bounded sub-trees</span></div>
+<div class="text-inverse-on-surface/40"><span class="w-6 inline-block text-right mr-3 text-tertiary">9</span>    left_score = memoized_prune(node.left, depth - 1, memo)</div>
+<div class="text-inverse-on-surface/40"><span class="w-6 inline-block text-right mr-3 text-tertiary">10</span>    right_score = memoized_prune(node.right, depth - 1, memo)</div>
+<div class="text-inverse-on-surface/40"><span class="w-6 inline-block text-right mr-3 text-tertiary">11</span>    result = max(left_score + node.cost, right_score)</div>
+<div class="text-inverse-on-surface/40"><span class="w-6 inline-block text-right mr-3 text-tertiary">12</span>    memo[state_key] = result</div>
+<div class="text-inverse-on-surface/40"><span class="w-6 inline-block text-right mr-3 text-tertiary">13</span> <span class="text-primary-fixed-dim">return</span> result</div>
+</div>
+</div>
+<!-- Live Execution Metric Bar -->
+<div class="mt-4 pt-3 bg-[#111827]/70 p-3 rounded-xl flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="flex flex-col">
+<span class="text-caption text-inverse-on-surface/60">Complexity</span>
+<span class="font-label-md text-secondary-fixed">O(N × K)</span>
+</div>
+<div class="h-6 w-px bg-tertiary-container/30"></div>
+<div class="flex flex-col">
+<span class="text-caption text-inverse-on-surface/60">Recursion Depth</span>
+<span class="font-label-md text-primary-fixed-dim">d = 4</span>
+</div>
+<div class="h-6 w-px bg-tertiary-container/30"></div>
+<div class="flex flex-col">
+<span class="text-caption text-inverse-on-surface/60">Cache Memory</span>
+<span class="font-label-md text-inverse-on-surface">128 KB</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-primary/30 text-on-primary-container font-label-sm text-xs">
+<span class="material-symbols-outlined text-[14px]">terminal</span>
+<span>Tests Passed: 48/48</span>
+</div>
+</div>
+</div>
+<!-- Right Visual Dynamic Tree Graph & Cache Table (5 cols) -->
+<div class="xl:col-span-5 p-4 bg-[#141E33] flex flex-col justify-between overflow-hidden">
+<div>
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-md text-inverse-on-surface font-semibold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-secondary-fixed">account_tree</span>
+                    Sub-Tree Pruning Graph
+                  </span>
+<span class="font-caption text-secondary-fixed-dim font-mono">Live Sync</span>
+</div>
+<!-- Tree Diagram Inline SVG -->
+<div class="w-full h-44 bg-[#0d1527]/80 rounded-xl p-2 flex items-center justify-center relative">
+<svg class="w-full h-full" viewbox="0 0 320 160" xmlns="http://www.w3.org/2000/svg">
+<!-- Tree branches -->
+<line stroke="#4d556b" stroke-width="2" x1="160" x2="80" y1="24" y2="70"></line>
+<line stroke="#4d556b" stroke-width="2" x1="160" x2="240" y1="24" y2="70"></line>
+<line stroke="#4d556b" stroke-width="2" x1="80" x2="40" y1="70" y2="120"></line>
+<line stroke="#4d556b" stroke-width="2" x1="80" x2="120" y1="70" y2="120"></line>
+<!-- Pruned branch dotted red -->
+<line stroke="#ba1a1a" stroke-dasharray="4" stroke-width="2" x1="240" x2="200" y1="70" y2="120"></line>
+<line stroke="#ba1a1a" stroke-dasharray="4" stroke-width="2" x1="240" x2="280" y1="70" y2="120"></line>
+<!-- Nodes -->
+<!-- Root -->
+<circle cx="160" cy="24" fill="#004ac6" r="14"></circle>
+<text fill="#ffffff" font-family="Inter" font-size="10" font-weight="600" text-anchor="middle" x="160" y="28">N(8,4)</text>
+<!-- Left Child -->
+<circle cx="80" cy="70" fill="#004ac6" r="13"></circle>
+<text fill="#ffffff" font-family="Inter" font-size="9" text-anchor="middle" x="80" y="74">N(4,3)</text>
+<!-- Right Child (Pruned Target) -->
+<circle cx="240" cy="70" fill="#656d84" r="13"></circle>
+<text fill="#ffffff" font-family="Inter" font-size="9" text-anchor="middle" x="240" y="74">N(4,3)</text>
+<circle cx="240" cy="70" fill="none" r="16" stroke="#62df7d" stroke-dasharray="2" stroke-width="2"></circle>
+<!-- Leaves -->
+<circle cx="40" cy="120" fill="#213145" r="11"></circle>
+<text fill="#d3e4fe" font-family="Inter" font-size="8" text-anchor="middle" x="40" y="124">N(2,2)</text>
+<circle cx="120" cy="120" fill="#213145" r="11"></circle>
+<text fill="#d3e4fe" font-family="Inter" font-size="8" text-anchor="middle" x="120" y="124">N(2,1)</text>
+<!-- Pruned branch nodes -->
+<circle cx="200" cy="120" fill="#93000a" opacity="0.6" r="10"></circle>
+<text fill="#ffffff" font-family="Inter" font-size="8" text-anchor="middle" x="200" y="123">PRUNED</text>
+<circle cx="280" cy="120" fill="#93000a" opacity="0.6" r="10"></circle>
+<text fill="#ffffff" font-family="Inter" font-size="8" text-anchor="middle" x="280" y="123">PRUNED</text>
+</svg>
+<span class="absolute top-2 right-2 text-[10px] font-caption text-secondary-fixed bg-secondary-fixed-dim/20 px-2 py-0.5 rounded-full">Pruned 6 Redundant Nodes</span>
+</div>
+<!-- Cache Table -->
+<div class="mt-3">
+<div class="text-caption font-semibold uppercase tracking-wider text-inverse-on-surface/60 mb-1.5 flex items-center justify-between">
+<span>Active Memo Cache Table</span>
+<span class="text-primary-fixed-dim">Lookup: O(1)</span>
+</div>
+<div class="rounded-xl overflow-hidden bg-[#0d1527] text-xs">
+<table class="w-full text-left">
+<thead class="bg-[#1F2937] text-inverse-on-surface/70 font-caption">
+<tr>
+<th class="py-1.5 px-3">State Tuple</th>
+<th class="py-1.5 px-3">Return</th>
+<th class="py-1.5 px-3">Hits</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#1F2937] font-mono text-[11px] text-inverse-on-surface/85">
+<tr class="bg-secondary-fixed-dim/10">
+<td class="py-1.5 px-3 text-secondary-fixed font-semibold">(4, 3) ← current</td>
+<td class="py-1.5 px-3">42</td>
+<td class="py-1.5 px-3 text-secondary-fixed font-bold">14 ×</td>
+</tr>
+<tr>
+<td class="py-1.5 px-3">(2, 2)</td>
+<td class="py-1.5 px-3">18</td>
+<td class="py-1.5 px-3 text-inverse-on-surface/60">8 ×</td>
+</tr>
+<tr>
+<td class="py-1.5 px-3">(2, 1)</td>
+<td class="py-1.5 px-3">9</td>
+<td class="py-1.5 px-3 text-inverse-on-surface/60">3 ×</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Instructor Drawing Overlay Pill -->
+<div class="mt-3 p-2.5 rounded-xl bg-primary/20 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed-dim text-[18px]">draw</span>
+<span class="text-caption text-inverse-on-surface">Laser pointer enabled by Prof. Alan Vance</span>
+</div>
+<span class="flex h-2 w-2 rounded-full bg-primary-fixed animate-ping"></span>
+</div>
+</div>
+</div>
+</div>
+<!-- Vertical Filmstrip / Participants Video Tiles (25% on desktop) -->
+<aside class="lg:w-1/4 flex lg:flex-col gap-space-sm overflow-x-auto lg:overflow-y-auto min-h-0 flex-shrink-0">
+<!-- Tile 1: Prof. Alan Vance (Active Speaker) -->
+<div class="min-w-[220px] lg:min-w-0 w-full aspect-video rounded-2xl bg-[#1F2937] relative overflow-hidden ring-2 ring-primary shadow-lg flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Portrait video feed of senior male computer science professor Alan Vance with glasses, silver hair, wearing navy sweater and wireless lapel microphone in university laboratory with warm ambient lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRBiy8UmdVfVaRsEtlwDB0G8MPYIWKm79NtjRK63ayVi3D_gd6YIq5whS_wIIHHZDmF15gB2j8aL3PcuJSwsGjqnN_xctAb0476VXqYPP-dy3RtX2kNy-jB78uB3XY5GY6wv4_M8DxfUVQ79w6EyG6C0r9iikzzBH5lD7AmmOg4Z6sQTGKMU0qFb8aOhFgLE_ep0wW2gLNMKI2gEmwrOg6f8IAErjEoJgFKw2sj7U"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#111827]/80 via-transparent to-transparent"></div>
+<!-- Audio Meter Wave -->
+<div class="absolute top-2.5 right-2.5 flex items-center gap-0.5 px-2 py-1 rounded-full bg-[#111827]/80 backdrop-blur-sm">
+<span class="h-2.5 w-1 bg-secondary-fixed rounded-full animate-bounce"></span>
+<span class="h-4 w-1 bg-secondary-fixed rounded-full animate-bounce delay-75"></span>
+<span class="h-3 w-1 bg-secondary-fixed rounded-full animate-bounce delay-150"></span>
+</div>
+<!-- Identity Pill -->
+<div class="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-full bg-[#111827]/80 backdrop-blur-md flex items-center gap-1.5 font-label-sm text-xs">
+<span class="material-symbols-outlined text-[14px] text-secondary-fixed">mic</span>
+<span class="font-semibold text-inverse-on-surface">Prof. Alan Vance</span>
+<span class="text-[10px] px-1.5 py-0.2 bg-primary text-on-primary rounded font-caption">Host</span>
+</div>
+</div>
+<!-- Tile 2: Maya K. (Raised Hand) -->
+<div class="min-w-[220px] lg:min-w-0 w-full aspect-video rounded-2xl bg-[#1F2937] relative overflow-hidden shadow flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Video feed of Maya K, a focused young female university student wearing modern headphones in a clean study room with soft natural lighting and bookshelf background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKdUVO8jrLyiHj7XIJTv9jn53uBbnGhZG1Ok__fKPhsiwOdwJa2nyFUUI-UwKTsWSuyfPiELvGruz605DrtVhis9lxcil4uogrGCauyb8h-RPG0PU3T3mnTavcu_ILC7WHE-5E_GrYKGywaHTM5zPF8Ec2_Yjg_GTiXbQBDDt3Riy5az8eZTRC9h6HTu9Py1uy8XYAEDBc8ncExvkBeGnguwv9hK2-1Sj3r8eRUOk"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#111827]/80 via-transparent to-transparent"></div>
+<!-- Hand Raised Badge -->
+<div class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-amber-500/90 text-inverse-on-surface flex items-center gap-1 text-xs font-label-sm font-semibold shadow-md animate-pulse">
+<span class="text-sm">✋</span>
+<span>Hand Raised</span>
+</div>
+<div class="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-full bg-[#111827]/80 backdrop-blur-md flex items-center gap-1.5 font-label-sm text-xs">
+<span class="material-symbols-outlined text-[14px] text-error">mic_off</span>
+<span class="text-inverse-on-surface">Maya K.</span>
+</div>
+</div>
+<!-- Tile 3: David R. (Muted Student) -->
+<div class="min-w-[220px] lg:min-w-0 w-full aspect-video rounded-2xl bg-[#1F2937] relative overflow-hidden shadow flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Video feed of David R, a male college student in casual dark hoodie working attentively at his desk with monitor glow in modern dorm room setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCT9EtAlPeHeznPjrBWH1HrjCXdGvZyy8qjnBgwKcTdfDSPqdE0ZAGOa1E49hd3VDPgSJhHlKAdTS4OpNFB34_0pdzaq9StQSKT9J3Jglkvolma8CbsDQEPSEltBAdyVRLx3893lZ8cCu91YEqzBphZO-6gPa8tQIayJRvEAMlKTTVTIulirjuQNVFZjct3bS9riK4s5DWWFGMQ2IMkdnvTTojte21JZrwVa1oHwkQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#111827]/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-full bg-[#111827]/80 backdrop-blur-md flex items-center gap-1.5 font-label-sm text-xs">
+<span class="material-symbols-outlined text-[14px] text-error">mic_off</span>
+<span class="text-inverse-on-surface">David R.</span>
+</div>
+</div>
+<!-- Tile 4: Sarah Lin (TA, Co-Host) -->
+<div class="min-w-[220px] lg:min-w-0 w-full aspect-video rounded-2xl bg-[#1F2937] relative overflow-hidden shadow flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Video feed of Sarah Lin, a female Asian graduate teaching assistant smiling warmly with headset microphone in an academic office with whiteboard formulas in background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcnojIUKU91FOro9BhC8rR5EJh6eR8lakTtOPveoE5wIAs-7QvrDMkB1IPDJSH_hZqrsebLDhs5KJsT3YVos8dkdn655YpMvg7H-ZL-0hWbXtnClY78U9LrajP-o4dGfGNrue5nDdq-k035c8d2oVUPXSm0PLp1A-3ra-upEgbBWE9-aKQNtVnyLrmbJZodI0ywWq7OzSVaET486ZbBNreLpHBq6sQDawpMuqK4hY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#111827]/80 via-transparent to-transparent"></div>
+<div class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-secondary-fixed/20 text-secondary-fixed text-[11px] font-label-sm font-semibold">
+              TA / Co-Host
+            </div>
+<div class="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-full bg-[#111827]/80 backdrop-blur-md flex items-center gap-1.5 font-label-sm text-xs">
+<span class="material-symbols-outlined text-[14px] text-inverse-on-surface/60">mic_off</span>
+<span class="text-inverse-on-surface">Sarah Lin</span>
+</div>
+</div>
+<!-- Tile 5: Overflow Participants Tile -->
+<div class="min-w-[220px] lg:min-w-0 w-full aspect-video rounded-2xl bg-[#1F2937]/90 flex flex-col items-center justify-center text-center p-3 cursor-pointer hover:bg-[#374151]/70 transition-colors flex-shrink-0" onclick="switchRightTab('roster')">
+<div class="w-10 h-10 rounded-full bg-[#374151] flex items-center justify-center mb-1">
+<span class="material-symbols-outlined text-inverse-on-surface text-[20px]">groups</span>
+</div>
+<span class="font-headline-md text-sm text-inverse-on-surface font-semibold">+34 others</span>
+<span class="font-caption text-inverse-on-surface/60 mt-0.5">Click to view roster</span>
+</div>
+</aside>
+</div>
+<!-- Floating Floating Active Hand Queue Notification (Overlay atop bottom stage) -->
+<div class="absolute bottom-20 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-2.5 rounded-full bg-[#1E293B]/95 backdrop-blur-md border-0 shadow-2xl transition-all" id="hand-queue-banner">
+<div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-label-md">✋</div>
+<div class="flex items-center gap-2 text-xs font-label-sm">
+<span class="font-semibold text-inverse-on-surface">Maya K. raised hand</span>
+<span class="text-inverse-on-surface/50 font-caption">• 2 mins ago</span>
+</div>
+<button class="px-3 py-1 rounded-full bg-primary hover:bg-primary-container text-on-primary font-label-sm text-xs transition-colors" onclick="document.getElementById('hand-queue-banner').classList.add('hidden')">
+          Recognize Speaker
+        </button>
+<button class="p-1 rounded-full text-inverse-on-surface/60 hover:text-inverse-on-surface" onclick="document.getElementById('hand-queue-banner').classList.add('hidden')">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</section>
+<!-- Docked Right Side Panel (360px width) -->
+<aside class="w-[360px] bg-[#1F2937] flex flex-col flex-shrink-0 min-h-0 z-20 shadow-2xl" id="right-side-panel">
+<!-- Panel Navigation Tabs -->
+<div class="h-12 px-space-sm bg-[#111827] flex items-center justify-between flex-shrink-0">
+<div class="flex items-center gap-1 w-full">
+<button class="flex-1 py-2 px-2 rounded-lg bg-[#1F2937] text-inverse-on-surface font-label-sm text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors" id="tab-chat-btn" onclick="switchRightTab('chat')">
+<span class="material-symbols-outlined text-[16px]">chat</span>
+<span>In-Class Chat</span>
+<span class="px-1.5 py-0.2 bg-primary rounded-full text-[10px] text-on-primary font-bold">3</span>
+</button>
+<button class="flex-1 py-2 px-2 rounded-lg text-inverse-on-surface/70 hover:text-inverse-on-surface font-label-sm text-xs flex items-center justify-center gap-1.5 transition-colors" id="tab-roster-btn" onclick="switchRightTab('roster')">
+<span class="material-symbols-outlined text-[16px]">group</span>
+<span>Roster & Queue (38)</span>
+</button>
+</div>
+</div>
+<!-- TAB 1: Chat Stream View -->
+<div class="flex-1 flex flex-col min-h-0" id="tab-chat-content">
+<!-- Pinned TA Message Banner -->
+<div class="p-3 bg-[#111827]/60 m-3 mb-1 rounded-xl flex items-start gap-2.5 flex-shrink-0">
+<span class="material-symbols-outlined text-secondary-fixed text-[18px] mt-0.5">push_pin</span>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[11px] text-secondary-fixed font-semibold">TA Sarah Lin • Starter Material</span>
+<span class="font-caption text-[10px] text-inverse-on-surface/50">2:15 PM</span>
+</div>
+<p class="font-body-md text-xs text-inverse-on-surface/90 mt-0.5 break-all">
+              Starter repo: <a class="text-primary-fixed underline hover:text-inverse-primary" href="#">github.com/learnly-cs101/memoization-lab</a>
+</p>
+</div>
+</div>
+<!-- Scrollable Chat Stream -->
+<div class="flex-1 p-space-md space-y-4 overflow-y-auto min-h-0 text-xs" id="chat-messages-container">
+<!-- Message 1: Maya K. -->
+<div class="flex items-start gap-2.5">
+<div class="w-7 h-7 rounded-full bg-[#374151] flex items-center justify-center font-bold text-xs text-inverse-on-surface flex-shrink-0">MK</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between">
+<span class="font-label-md text-xs text-inverse-on-surface font-semibold truncate">Maya K.</span>
+<span class="font-caption text-[10px] text-inverse-on-surface/50">2:24 PM</span>
+</div>
+<div class="mt-1 p-2.5 rounded-xl rounded-tl-xs bg-[#111827]/70 text-inverse-on-surface/90 leading-relaxed">
+                Does memoization reduce the call stack height or only time complexity?
+              </div>
+</div>
+</div>
+<!-- Message 2: Prof. Alan Vance (Instructor) -->
+<div class="flex items-start gap-2.5">
+<div class="w-7 h-7 rounded-full bg-primary flex items-center justify-center font-bold text-xs text-on-primary flex-shrink-0">AV</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-xs text-primary-fixed-dim font-semibold truncate">Prof. Alan Vance</span>
+<span class="px-1 py-0.2 rounded bg-primary/30 text-[9px] text-on-primary-container font-semibold">Host</span>
+</div>
+<span class="font-caption text-[10px] text-inverse-on-surface/50">2:26 PM</span>
+</div>
+<div class="mt-1 p-2.5 rounded-xl rounded-tl-xs bg-primary/15 text-inverse-on-surface/95 leading-relaxed">
+                Great question Maya! Look at branch 2 on the right—the maximum recursion stack remains bounded by tree height $O(h)$, while redundant computations collapse from $O(2^n)$ down to $O(N \cdot K)$.
+              </div>
+</div>
+</div>
+<!-- Message 3: Alex Chen -->
+<div class="flex items-start gap-2.5">
+<div class="w-7 h-7 rounded-full bg-[#374151] flex items-center justify-center font-bold text-xs text-inverse-on-surface flex-shrink-0">AC</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between">
+<span class="font-label-md text-xs text-inverse-on-surface font-semibold truncate">Alex Chen</span>
+<span class="font-caption text-[10px] text-inverse-on-surface/50">2:27 PM</span>
+</div>
+<div class="mt-1 p-2.5 rounded-xl rounded-tl-xs bg-[#111827]/70 text-inverse-on-surface/90 leading-relaxed">
+                The cache table makes it super intuitive! Thanks Professor! 🔥
+              </div>
+</div>
+</div>
+<!-- Message 4: TA Sarah Lin Direct Advice -->
+<div class="flex items-start gap-2.5">
+<div class="w-7 h-7 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold text-xs flex-shrink-0">SL</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-xs text-secondary-fixed font-semibold truncate">Sarah Lin (TA)</span>
+<span class="px-1 py-0.2 rounded bg-secondary-fixed/20 text-[9px] text-secondary-fixed font-semibold">TA</span>
+</div>
+<span class="font-caption text-[10px] text-inverse-on-surface/50">2:29 PM</span>
+</div>
+<div class="mt-1 p-2.5 rounded-xl rounded-tl-xs bg-[#111827]/70 text-inverse-on-surface/90 leading-relaxed">
+                If anyone is running Python 3.11+, remember you can also experiment with <code class="font-mono text-secondary-fixed text-[11px]">@functools.lru_cache</code> in exercise 3.
+              </div>
+</div>
+</div>
+</div>
+<!-- Chat Input Bar & Controls -->
+<div class="p-3 bg-[#111827] flex flex-col gap-2 flex-shrink-0">
+<div class="flex items-center justify-between text-caption text-inverse-on-surface/60 px-1">
+<div class="flex items-center gap-1.5">
+<span>Send to:</span>
+<button class="inline-flex items-center gap-0.5 text-primary-fixed-dim hover:text-on-primary-container font-semibold">
+                Everyone (Public)
+                <span class="material-symbols-outlined text-[14px]">expand_more</span>
+</button>
+</div>
+<button class="text-secondary-fixed-dim hover:text-secondary-fixed font-caption flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">lock</span> Direct message TA
+            </button>
+</div>
+<div class="relative flex items-center bg-[#1F2937] rounded-xl px-3 py-1.5">
+<input class="w-full bg-transparent text-xs text-inverse-on-surface placeholder:text-inverse-on-surface/40 focus:outline-none" id="chat-input-field" onkeydown="if(event.key==='Enter') sendChatMessage();" placeholder="Send a message or code snippet..." type="text"/>
+<div class="flex items-center gap-1.5 text-inverse-on-surface/60">
+<button class="hover:text-inverse-on-surface p-1" title="Insert Emoji">
+<span class="material-symbols-outlined text-[18px]">sentiment_satisfied</span>
+</button>
+<button class="hover:text-inverse-on-surface p-1" title="Attach snippet or file">
+<span class="material-symbols-outlined text-[18px]">attach_file</span>
+</button>
+<button class="p-1.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary transition-colors flex items-center justify-center" onclick="sendChatMessage()" title="Send Message">
+<span class="material-symbols-outlined text-[16px]">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- TAB 2: Participants & Hand Queue View (Hidden by default) -->
+<div class="flex-1 flex-col min-h-0 p-space-md overflow-y-auto hidden" id="tab-roster-content">
+<!-- Search filter -->
+<div class="relative mb-3">
+<input class="w-full bg-[#111827] text-xs px-3 py-2 pl-8 rounded-lg text-inverse-on-surface placeholder:text-inverse-on-surface/40 focus:outline-none" placeholder="Search 38 attendees..." type="text"/>
+<span class="material-symbols-outlined absolute left-2.5 top-2.5 text-[16px] text-inverse-on-surface/40">search</span>
+</div>
+<!-- Hand Queue Priority Section -->
+<div class="mb-4">
+<span class="font-caption uppercase tracking-wider text-amber-400 font-semibold mb-2 block">Hand Queue (1)</span>
+<div class="flex items-center justify-between p-2 rounded-xl bg-amber-500/15 mb-2">
+<div class="flex items-center gap-2">
+<span class="text-base">✋</span>
+<div>
+<div class="font-label-sm text-xs font-semibold text-inverse-on-surface">Maya K.</div>
+<div class="font-caption text-[10px] text-inverse-on-surface/60">Waiting 2 min</div>
+</div>
+</div>
+<button class="px-2 py-1 rounded bg-primary text-on-primary text-[11px] font-label-sm">Call on</button>
+</div>
+</div>
+<!-- Host & Teaching Staff -->
+<div class="mb-4">
+<span class="font-caption uppercase tracking-wider text-inverse-on-surface/50 font-semibold mb-2 block">Hosts & Instructors (2)</span>
+<div class="space-y-2">
+<div class="flex items-center justify-between p-1.5 rounded-lg hover:bg-[#111827]/50">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-xs font-bold">AV</div>
+<div>
+<div class="font-label-sm text-xs text-inverse-on-surface font-semibold">Prof. Alan Vance</div>
+<div class="font-caption text-[10px] text-secondary-fixed">Speaking now</div>
+</div>
+</div>
+<div class="flex items-center gap-1.5 text-inverse-on-surface/70">
+<span class="material-symbols-outlined text-[16px] text-secondary-fixed">mic</span>
+<span class="material-symbols-outlined text-[16px] text-primary-fixed-dim">videocam</span>
+</div>
+</div>
+<div class="flex items-center justify-between p-1.5 rounded-lg hover:bg-[#111827]/50">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-secondary flex items-center justify-center text-xs font-bold">SL</div>
+<div>
+<div class="font-label-sm text-xs text-inverse-on-surface font-semibold">Sarah Lin</div>
+<div class="font-caption text-[10px] text-inverse-on-surface/50">Teaching Assistant</div>
+</div>
+</div>
+<div class="flex items-center gap-1.5 text-inverse-on-surface/70">
+<span class="material-symbols-outlined text-[16px] text-error">mic_off</span>
+<span class="material-symbols-outlined text-[16px]">videocam</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Students list preview -->
+<div>
+<span class="font-caption uppercase tracking-wider text-inverse-on-surface/50 font-semibold mb-2 block">Students (36)</span>
+<div class="space-y-1.5 text-xs text-inverse-on-surface/80">
+<div class="flex items-center justify-between p-1.5 rounded-lg hover:bg-[#111827]/50">
+<span>Alex Chen</span>
+<span class="material-symbols-outlined text-[16px] text-error">mic_off</span>
+</div>
+<div class="flex items-center justify-between p-1.5 rounded-lg hover:bg-[#111827]/50">
+<span>David R.</span>
+<span class="material-symbols-outlined text-[16px] text-error">mic_off</span>
+</div>
+<div class="flex items-center justify-between p-1.5 rounded-lg hover:bg-[#111827]/50">
+<span>Elena Rostova</span>
+<span class="material-symbols-outlined text-[16px] text-error">mic_off</span>
+</div>
+<div class="flex items-center justify-between p-1.5 rounded-lg hover:bg-[#111827]/50">
+<span>Marcus Brody</span>
+<span class="material-symbols-outlined text-[16px] text-error">mic_off</span>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+<!-- Bottom Floating Control Bar (Docked Call Action Bar) -->
+<footer class="h-20 bg-[#111827] px-space-md flex items-center justify-between flex-shrink-0 relative z-30">
+<!-- Far Bottom-Left: Quick Audio Status & Session Mode -->
+<div class="hidden xl:flex items-center gap-3 w-1/4">
+<div class="flex items-center gap-2 text-xs font-label-sm text-inverse-on-surface/80">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary-fixed"></span>
+<span>Default Mic: MacBook Pro Microphone</span>
+</div>
+</div>
+<!-- Center: Main Video Conference Controls Pill -->
+<div class="flex items-center justify-center gap-2 sm:gap-2.5 mx-auto">
+<!-- Microphone Toggle with Chevron -->
+<div class="inline-flex rounded-full bg-[#1F2937] p-1">
+<button class="w-10 h-10 rounded-full bg-[#374151] hover:bg-[#4d556b] flex items-center justify-center text-inverse-on-surface transition-colors" id="mic-toggle-btn" onclick="toggleControl('mic-toggle-btn', 'mic', 'mic_off')" title="Mute Microphone">
+<span class="material-symbols-outlined text-[20px]">mic</span>
+</button>
+<button class="px-1.5 hover:text-inverse-on-surface text-inverse-on-surface/60" title="Select Audio Device">
+<span class="material-symbols-outlined text-[16px]">expand_less</span>
+</button>
+</div>
+<!-- Camera Toggle with Chevron -->
+<div class="inline-flex rounded-full bg-[#1F2937] p-1">
+<button class="w-10 h-10 rounded-full bg-[#374151] hover:bg-[#4d556b] flex items-center justify-center text-inverse-on-surface transition-colors" id="camera-toggle-btn" onclick="toggleControl('camera-toggle-btn', 'videocam', 'videocam_off')" title="Turn Camera Off">
+<span class="material-symbols-outlined text-[20px]">videocam</span>
+</button>
+<button class="px-1.5 hover:text-inverse-on-surface text-inverse-on-surface/60" title="Select Video Device">
+<span class="material-symbols-outlined text-[16px]">expand_less</span>
+</button>
+</div>
+<!-- Screen Share Toggle (Active State: Accent Blue) -->
+<button class="h-10 px-3.5 rounded-full bg-primary hover:bg-primary-container text-on-primary flex items-center gap-1.5 font-label-sm text-xs font-semibold shadow-md transition-colors" title="Sharing Screen">
+<span class="material-symbols-outlined text-[18px]">screen_share</span>
+<span class="hidden md:inline">Sharing</span>
+</button>
+<!-- Emoji Reactions Trigger -->
+<div class="relative group">
+<button class="w-10 h-10 rounded-full bg-[#1F2937] hover:bg-[#374151] flex items-center justify-center text-inverse-on-surface transition-colors" title="Reactions">
+<span class="material-symbols-outlined text-[20px]">add_reaction</span>
+</button>
+<!-- Reactions Popover (Hover/Focus) -->
+<div class="absolute bottom-12 left-1/2 -translate-x-1/2 hidden group-hover:flex items-center gap-1 p-1.5 rounded-full bg-[#1E293B] shadow-2xl z-40">
+<button class="hover:scale-125 transition-transform p-1 text-base" onclick="triggerFloatingReaction('❤️')">❤️</button>
+<button class="hover:scale-125 transition-transform p-1 text-base" onclick="triggerFloatingReaction('👍')">👍</button>
+<button class="hover:scale-125 transition-transform p-1 text-base" onclick="triggerFloatingReaction('👏')">👏</button>
+<button class="hover:scale-125 transition-transform p-1 text-base" onclick="triggerFloatingReaction('💡')">💡</button>
+<button class="hover:scale-125 transition-transform p-1 text-base" onclick="triggerFloatingReaction('🎉')">🎉</button>
+</div>
+</div>
+<!-- Closed Captions (CC Active) -->
+<button class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center transition-colors" id="cc-btn" onclick="this.classList.toggle('bg-primary'); this.classList.toggle('text-on-primary');" title="Closed Captions Active">
+<span class="material-symbols-outlined text-[20px]">closed_caption</span>
+</button>
+<!-- Raise Hand Button (With Badge) -->
+<button class="h-10 px-3.5 rounded-full bg-[#1F2937] hover:bg-[#374151] flex items-center gap-1.5 font-label-sm text-xs text-inverse-on-surface transition-colors" id="raise-hand-btn" onclick="toggleRaiseHand()" title="Raise Hand">
+<span class="text-sm">✋</span>
+<span class="hidden sm:inline">Raise Hand</span>
+</button>
+<!-- Class Notes Pill (Learnly Custom Note Drawer) -->
+<button class="h-10 px-3 rounded-full bg-[#1F2937] hover:bg-[#374151] flex items-center gap-1.5 font-label-sm text-xs text-inverse-on-surface transition-colors" onclick="toggleNotesDrawer()" title="Open In-Class Collaborative Notes">
+<span class="material-symbols-outlined text-[18px] text-secondary-fixed">edit_note</span>
+<span class="hidden lg:inline">Class Notes</span>
+</button>
+<!-- More Options (•••) -->
+<button class="w-10 h-10 rounded-full bg-[#1F2937] hover:bg-[#374151] flex items-center justify-center text-inverse-on-surface transition-colors" title="More Settings">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</button>
+<!-- Red Leave Class Pill -->
+<button class="h-10 px-4 rounded-full bg-error hover:bg-[#93000a] text-on-error flex items-center gap-1.5 font-label-sm text-xs font-semibold shadow-md transition-colors ml-1 sm:ml-2" onclick="confirm('Leave CS 101 Live Workshop?')" title="Disconnect Call">
+<span class="material-symbols-outlined text-[18px]">call_end</span>
+<span>Leave</span>
+</button>
+</div>
+<!-- Far Bottom-Right: Whiteboard & Host Controls -->
+<div class="hidden xl:flex items-center justify-end gap-2 w-1/4">
+<button class="px-3 py-1.5 rounded-xl bg-[#1F2937] hover:bg-[#374151] text-inverse-on-surface flex items-center gap-1.5 font-label-sm text-xs transition-colors" title="Launch Interactive Whiteboard">
+<span class="material-symbols-outlined text-[18px] text-primary-fixed-dim">gesture</span>
+<span>Whiteboard</span>
+</button>
+<button class="p-2 rounded-xl bg-[#1F2937] hover:bg-[#374151] text-inverse-on-surface transition-colors" title="Host Controls & Permissions">
+<span class="material-symbols-outlined text-[20px]">shield_person</span>
+</button>
+</div>
+</footer>
+<!-- Floating Live Reactions Container (Target for Animated Emojis) -->
+<div class="pointer-events-none fixed inset-0 z-50 overflow-hidden" id="reactions-animation-layer"></div>
+<!-- Slide-Over Class Notes Drawer (Hidden by default) -->
+<div class="fixed inset-y-16 right-0 w-80 bg-[#1F2937] shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col p-4" id="notes-drawer">
+<div class="flex items-center justify-between pb-3 bg-[#111827]/40 -m-4 p-4 mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-fixed">edit_note</span>
+<span class="font-label-md font-semibold text-inverse-on-surface">Personal Live Notes</span>
+</div>
+<button class="text-inverse-on-surface/60 hover:text-inverse-on-surface" onclick="toggleNotesDrawer()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="flex-1 flex flex-col">
+<textarea class="w-full flex-1 bg-[#111827] text-inverse-on-surface text-xs p-3 rounded-xl focus:outline-none resize-none placeholder:text-inverse-on-surface/40 leading-relaxed font-mono" placeholder="Type your session notes here. Synchronized to your Learnly CS 101 notebook..."></textarea>
+<div class="mt-3 flex items-center justify-between text-caption text-inverse-on-surface/60">
+<span>Auto-saving to cloud...</span>
+<button class="px-2.5 py-1 rounded bg-primary text-on-primary text-xs font-label-sm">Export PDF</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Client-side Interactive Script -->
+<script>
+  function switchRightTab(tab) {
+    const chatContent = document.getElementById('tab-chat-content');
+    const rosterContent = document.getElementById('tab-roster-content');
+    const chatBtn = document.getElementById('tab-chat-btn');
+    const rosterBtn = document.getElementById('tab-roster-btn');
+
+    if (tab === 'chat') {
+      chatContent.classList.remove('hidden');
+      rosterContent.classList.add('hidden');
+      chatBtn.classList.add('bg-[#1F2937]', 'text-inverse-on-surface');
+      chatBtn.classList.remove('text-inverse-on-surface/70');
+      rosterBtn.classList.remove('bg-[#1F2937]', 'text-inverse-on-surface');
+      rosterBtn.classList.add('text-inverse-on-surface/70');
+    } else {
+      chatContent.classList.add('hidden');
+      rosterContent.classList.remove('hidden');
+      rosterBtn.classList.add('bg-[#1F2937]', 'text-inverse-on-surface');
+      rosterBtn.classList.remove('text-inverse-on-surface/70');
+      chatBtn.classList.remove('bg-[#1F2937]', 'text-inverse-on-surface');
+      chatBtn.classList.add('text-inverse-on-surface/70');
+    }
+  }
+
+  function toggleControl(btnId, onIcon, offIcon) {
+    const btn = document.getElementById(btnId);
+    const icon = btn.querySelector('.material-symbols-outlined');
+    if (icon.textContent === onIcon) {
+      icon.textContent = offIcon;
+      btn.classList.remove('bg-[#374151]', 'hover:bg-[#4d556b]');
+      btn.classList.add('bg-error', 'hover:bg-[#93000a]');
+    } else {
+      icon.textContent = onIcon;
+      btn.classList.remove('bg-error', 'hover:bg-[#93000a]');
+      btn.classList.add('bg-[#374151]', 'hover:bg-[#4d556b]');
+    }
+  }
+
+  function toggleRaiseHand() {
+    const btn = document.getElementById('raise-hand-btn');
+    btn.classList.toggle('bg-amber-500');
+    btn.classList.toggle('text-inverse-surface');
+    btn.classList.toggle('bg-[#1F2937]');
+    btn.classList.toggle('text-inverse-on-surface');
+  }
+
+  function toggleNotesDrawer() {
+    const drawer = document.getElementById('notes-drawer');
+    drawer.classList.toggle('translate-x-full');
+  }
+
+  function sendChatMessage() {
+    const input = document.getElementById('chat-input-field');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const container = document.getElementById('chat-messages-container');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'flex items-start gap-2.5';
+    msgDiv.innerHTML = `
+      <div class="w-7 h-7 rounded-full bg-primary flex items-center justify-center font-bold text-xs text-on-primary flex-shrink-0">YOU</div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-baseline justify-between">
+          <span class="font-label-md text-xs text-inverse-on-surface font-semibold truncate">You</span>
+          <span class="font-caption text-[10px] text-inverse-on-surface/50">Just now</span>
+        </div>
+        <div class="mt-1 p-2.5 rounded-xl rounded-tl-xs bg-[#111827]/70 text-inverse-on-surface/90 leading-relaxed">
+          ${text.replace(/</g, "<").replace(/>/g, ">")}
+        </div>
+      </div>
+    `;
+    container.appendChild(msgDiv);
+    input.value = '';
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function triggerFloatingReaction(emoji) {
+    const layer = document.getElementById('reactions-animation-layer');
+    const el = document.createElement('div');
+    el.textContent = emoji;
+    el.className = 'absolute text-3xl select-none transition-all duration-1000 transform';
+    el.style.left = (Math.random() * 40 + 30) + '%';
+    el.style.bottom = '100px';
+    el.style.opacity = '1';
+    layer.appendChild(el);
+
+    setTimeout(() => {
+      el.style.bottom = (window.innerHeight * 0.6) + 'px';
+      el.style.opacity = '0';
+      el.style.transform = 'scale(1.5)';
+    }, 50);
+
+    setTimeout(() => {
+      el.remove();
+    }, 1100);
+  }
+
+  function switchStageMode(mode) {
+    const screenBtn = document.getElementById('view-screen-btn');
+    const gridBtn = document.getElementById('view-grid-btn');
+    const speakerBtn = document.getElementById('view-speaker-btn');
+
+    [screenBtn, gridBtn, speakerBtn].forEach(b => {
+      b.classList.remove('bg-primary', 'text-on-primary');
+      b.classList.add('text-inverse-on-surface/70');
+    });
+
+    if (mode === 'screen') {
+      screenBtn.classList.add('bg-primary', 'text-on-primary');
+      screenBtn.classList.remove('text-inverse-on-surface/70');
+    } else if (mode === 'grid') {
+      gridBtn.classList.add('bg-primary', 'text-on-primary');
+      gridBtn.classList.remove('text-inverse-on-surface/70');
+    } else {
+      speakerBtn.classList.add('bg-primary', 'text-on-primary');
+      speakerBtn.classList.remove('text-inverse-on-surface/70');
+    }
+  }
+</script></main><footer class="w-full bg-inverse-surface/90 py-space-sm"><div class="w-full px-gutter flex items-center justify-between text-inverse-on-surface/60 font-caption"><span>Learnly Secure Classroom • E2E Encrypted</span><span>Session ID: cs101-meet-7a9 • Latency: 24ms</span></div></footer></body></html>

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"on-secondary":"#ffffff","on-primary":"#ffffff","on-surface-variant":"#434655","primary-container":"#2563eb","surface-tint":"#0053db","inverse-surface":"#213145","secondary-container":"#7cf994","surface-container":"#e5eeff","tertiary-fixed-dim":"#bec6e0","surface-bright":"#f8f9ff","on-tertiary":"#ffffff","surface":"#f8f9ff","surface-variant":"#d3e4fe","surface-container-highest":"#d3e4fe","primary-fixed":"#dbe1ff","surface-container-low":"#eff4ff","on-surface":"#0b1c30","primary":"#004ac6","tertiary-container":"#656d84","outline":"#737686","on-error":"#ffffff","inverse-on-surface":"#eaf1ff","on-secondary-container":"#007230","on-primary-fixed":"#00174b","background":"#f8f9ff","error":"#ba1a1a","primary-fixed-dim":"#b4c5ff","inverse-primary":"#b4c5ff","surface-container-lowest":"#ffffff","on-secondary-fixed":"#002109","tertiary-fixed":"#dae2fd","on-tertiary-fixed":"#131b2e","on-background":"#0b1c30","on-secondary-fixed-variant":"#005320","secondary-fixed-dim":"#62df7d","on-primary-fixed-variant":"#003ea8","surface-container-high":"#dce9ff","surface-dim":"#cbdbf5","tertiary":"#4d556b","on-tertiary-container":"#eef0ff","secondary":"#006e2d","on-error-container":"#93000a","error-container":"#ffdad6","on-tertiary-fixed-variant":"#3f465c","secondary-fixed":"#7ffc97","outline-variant":"#c3c6d7","on-primary-container":"#eeefff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"margin-sm":"1rem","space-lg":"1.5rem","gutter-sm":"1rem","margin":"2rem","gutter":"1.5rem","space-md":"1rem","space-xs":"0.25rem","space-sm":"0.5rem","space-xl":"2rem"},"fontFamily":{"headline-lg":["Inter"],"headline-md":["Inter"],"body-md":["Inter"],"headline-xl-mobile":["Inter"],"body-lg":["Inter"],"caption":["Inter"],"label-md":["Inter"],"headline-xl":["Inter"],"label-sm":["Inter"]},"fontSize":{"headline-lg":["24px",{"lineHeight":"32px","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-md":["20px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"600"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"headline-xl-mobile":["28px",{"lineHeight":"36px","letterSpacing":"-0.015em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"caption":["12px",{"lineHeight":"16px","fontWeight":"400"}],"label-md":["14px",{"lineHeight":"20px","fontWeight":"500"}],"headline-xl":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"label-sm":["12px",{"lineHeight":"16px","letterSpacing":"0.01em","fontWeight":"500"}]}}}};</script></head><body class="bg-surface font-body-md text-on-surface antialiased min-h-screen"><aside class="fixed left-0 top-0 h-full w-[280px] bg-surface-container-lowest z-50 flex flex-col shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-space-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><button class="p-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low rounded-lg transition-colors" type="button"><span class="material-symbols-outlined text-[24px]">menu</span></button><img alt="Learnly Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WnDacdqki69VVCtQT5LhO2ker_f3G1E71zTjtdL0TmINyU3iC0uA_1TFAMin43Txm0inm7-poVva7vHig5IOMe2C7B4TBIYroUV31ajAELoDFI9f5bBPsm7LqLXRVGEq9hSUtplk8IArGlQ2rWHVeRmFVHssNn2uzh3D8eUrSvNvJSSMbIw4C3Naj3u0dih6VUbdBzFABVByK0QxMPbfJ16nrZo5E6frfwl6UI5_wX"/><span class="font-headline-md text-headline-md text-primary tracking-tight">Learnly</span></div></div><div class="flex-1 overflow-y-auto px-space-sm py-space-sm flex flex-col justify-between gap-space-md"><div class="flex flex-col gap-space-sm"><nav class="flex flex-col gap-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-label-md font-semibold"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-full text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="home" href="#"><span class="material-symbols-outlined text-[20px]">home</span><span>Home</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-full text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="calendar" href="#"><span class="material-symbols-outlined text-[20px]">calendar_today</span><span>Calendar</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-full text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="todo" href="#"><span class="material-symbols-outlined text-[20px]">task_alt</span><span>To-do</span></a></nav><div class="pt-space-sm"><div class="flex items-center justify-between px-space-md py-space-xs cursor-pointer group"><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold group-hover:text-on-surface">Enrolled</span><span class="material-symbols-outlined text-[18px] text-on-surface-variant group-hover:text-on-surface">expand_more</span></div><div class="mt-space-xs flex flex-col gap-space-xs"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors group" data-path="course-cs101" href="#"><div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-md text-label-md font-bold shrink-0">P</div><div class="flex flex-col min-w-0"><span class="font-label-md text-label-md truncate text-on-surface font-medium">CS 101: Python</span><span class="font-caption text-caption text-on-surface-variant truncate">Fall 2026</span></div></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors group" data-path="course-ux204" href="#"><div class="w-8 h-8 rounded-full bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center font-label-md text-label-md font-bold shrink-0">U</div><div class="flex flex-col min-w-0"><span class="font-label-md text-label-md truncate text-on-surface font-medium">UX 204: Interaction</span><span class="font-caption text-caption text-on-surface-variant truncate">Fall 2026</span></div></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors group" data-path="course-bio110" href="#"><div class="w-8 h-8 rounded-full bg-error-container text-on-error-container flex items-center justify-center font-label-md text-label-md font-bold shrink-0">B</div><div class="flex flex-col min-w-0"><span class="font-label-md text-label-md truncate text-on-surface font-medium">BIO 110: Genetics</span><span class="font-caption text-caption text-on-surface-variant truncate">Fall 2026</span></div></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors group" data-path="course-data301" href="#"><div class="w-8 h-8 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center font-label-md text-label-md font-bold shrink-0">D</div><div class="flex flex-col min-w-0"><span class="font-label-md text-label-md truncate text-on-surface font-medium">DATA 301: ML Basics</span><span class="font-caption text-caption text-on-surface-variant truncate">Fall 2026</span></div></a></div></div></div><nav class="flex flex-col gap-space-xs pt-space-md bg-surface-container-lowest" data-active-classes="bg-primary-container text-on-primary-container font-label-md font-semibold"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-full text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="certificates" href="#"><span class="material-symbols-outlined text-[20px]">verified</span><span>Certificates</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-full text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="archived" href="#"><span class="material-symbols-outlined text-[20px]">archive</span><span>Archived</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-full text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span>Settings</span></a></nav></div></aside><div class="pl-[280px]"><header class="fixed top-0 left-[280px] right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-margin flex items-center justify-between"><div class="flex items-center gap-space-md flex-1 max-w-md"><div class="relative w-full"><span class="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span><input class="w-full pl-10 pr-space-md py-space-xs bg-surface-container-low rounded-full font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container transition-colors" placeholder="Search your courses, assignments, peers..." type="text"/></div></div><div class="flex items-center gap-space-md"><button class="inline-flex items-center gap-space-xs px-space-lg py-space-sm bg-primary-container text-on-primary-container rounded-full font-label-md text-label-md hover:bg-primary transition-colors shadow-[0_1px_3px_rgba(15,23,42,0.04)]" type="button"><span class="material-symbols-outlined text-[18px]">add</span><span>Create or Join</span></button><button class="p-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low rounded-full transition-colors" type="button"><span class="material-symbols-outlined text-[24px]">apps</span></button><div class="relative"><button class="p-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low rounded-full transition-colors" type="button"><span class="material-symbols-outlined text-[24px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest"></span></button></div><div class="flex items-center gap-space-sm pl-space-xs cursor-pointer"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-surface-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD40m8siZ1abSwcGwZFpPJDggoNopEPBjTNNldQxhS-1blQU7EM4FXPm2slSWw5iAepZ-EjRG0ERhTNuNk5Sjf4_uPUF1VONuZQQMxpdj_emX6lAXkDLPkjnGW8lqqX8C785DVTCGBQfjQiEO1L58v7adewcjXLGdeMcPILoGiVN9wB3jCnFsnzCcHxOepuuPpFzSF1i3YlUJVY7Gp8rTnbX1XB4wmw0gv2iAe-gDU"/></div></div></header><main class="relative pt-16 bg-surface w-full p-margin min-h-screen"><div class="flex flex-col w-full gap-space-lg pb-16">
+<!-- Breadcrumb bar with dynamic status tag -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<nav aria-label="Breadcrumb" class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
+<a class="hover:text-primary transition-colors" href="#">Learnly</a>
+<span class="material-symbols-outlined text-[16px] text-outline-variant">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">CS 101: Introduction to Python &amp; Algorithms</a>
+<span class="material-symbols-outlined text-[16px] text-outline-variant">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Quizzes</a>
+<span class="material-symbols-outlined text-[16px] text-outline-variant">chevron_right</span>
+<span class="font-medium text-on-surface">Quiz 4: Tree Traversal &amp; Recursion</span>
+</nav>
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container/30 text-on-secondary-container font-label-sm text-label-sm font-semibold">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+        In Progress • Proctored
+      </span>
+<button class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant hover:text-on-surface text-label-sm font-label-sm transition-colors" title="Quiz Guidelines" type="button">
+<span class="material-symbols-outlined text-[16px]">info</span>
+        Rules &amp; Scoring
+      </button>
+</div>
+</div>
+<!-- Quiz Banner & Real-time Countdown Header -->
+<header class="relative overflow-hidden bg-surface-container-lowest rounded-xl shadow-[0_1px_3px_rgba(15,23,42,0.04)] p-space-lg">
+<div class="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-primary-fixed/25 blur-3xl pointer-events-none"></div>
+<div class="relative flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="space-y-space-xs max-w-2xl">
+<div class="flex items-center gap-space-sm">
+<span class="px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm font-bold tracking-wide uppercase">Unit 3 Midterm</span>
+<span class="font-caption text-caption text-on-surface-variant">Max Score: 60 Pts • Passing: 75%</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Quiz 4: Tree Traversal &amp; Recursion Assessment</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Evaluation of depth-first orders, recursive invariants, and runtime complexity in binary tree abstractions.</p>
+</div>
+<!-- Time and Quick Submission Hub -->
+<div class="flex flex-wrap items-center gap-space-md shrink-0">
+<!-- Prominent Sticky Countdown Block -->
+<div class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl bg-surface-container-low shadow-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary shadow-xs">
+<span class="material-symbols-outlined text-[22px]">timer</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Remaining</span>
+<span class="inline-flex px-1.5 py-0.2 rounded-full bg-secondary-container/40 text-on-secondary-container font-caption text-caption font-bold">Standard</span>
+</div>
+<div class="font-headline-md text-headline-md font-bold text-on-surface tracking-tight" id="quizTimer">
+              18:45
+            </div>
+</div>
+</div>
+<button class="inline-flex items-center gap-space-xs px-space-lg py-space-sm bg-error text-on-error rounded-full font-label-md text-label-md hover:opacity-90 shadow-sm transition-all hover:scale-[1.02]" onclick="document.getElementById('submitModal').classList.remove('hidden')" type="button">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+<span>Submit Quiz</span>
+</button>
+</div>
+</div>
+<!-- Overall progress track bar -->
+<div class="mt-space-lg pt-space-md flex flex-col gap-1.5">
+<div class="flex justify-between items-center text-label-sm font-label-sm">
+<span class="text-on-surface font-semibold">Progress: Question 6 of 15</span>
+<span class="text-on-surface-variant">33.3% Complete</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-primary-container rounded-full transition-all duration-500" style="width: 33.3%;"></div>
+</div>
+</div>
+</header>
+<!-- 2-Column Quiz Work Area -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- LEFT PANEL: Question Navigator & Strategy Hub -->
+<aside class="lg:col-span-4 xl:col-span-4 flex flex-col gap-space-md order-2 lg:order-1">
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_1px_3px_rgba(15,23,42,0.04)] p-space-md flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md text-on-surface">Question Sheet</h2>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-caption text-caption font-semibold">15 Items</span>
+</div>
+<!-- Metric pill counters -->
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-around text-center">
+<div>
+<div class="font-headline-md text-headline-md font-bold text-secondary">5</div>
+<div class="font-caption text-caption text-on-surface-variant">Answered</div>
+</div>
+<div class="w-px h-8 bg-surface-container"></div>
+<div>
+<div class="font-headline-md text-headline-md font-bold text-on-surface">1</div>
+<div class="font-caption text-caption text-on-surface-variant">Flagged</div>
+</div>
+<div class="w-px h-8 bg-surface-container"></div>
+<div>
+<div class="font-headline-md text-headline-md font-bold text-on-surface-variant">9</div>
+<div class="font-caption text-caption text-on-surface-variant">Remaining</div>
+</div>
+</div>
+<!-- 3x5 Grid of numbered items -->
+<div class="grid grid-cols-5 gap-space-xs pt-space-xs">
+<!-- 1: Answered -->
+<button class="h-10 rounded-lg bg-secondary-container/40 text-on-secondary-container font-label-md text-label-md font-bold flex items-center justify-center transition-all hover:bg-secondary-container/60 shadow-xs" type="button">
+            1
+          </button>
+<!-- 2: Answered -->
+<button class="h-10 rounded-lg bg-secondary-container/40 text-on-secondary-container font-label-md text-label-md font-bold flex items-center justify-center transition-all hover:bg-secondary-container/60 shadow-xs" type="button">
+            2
+          </button>
+<!-- 3: Answered -->
+<button class="h-10 rounded-lg bg-secondary-container/40 text-on-secondary-container font-label-md text-label-md font-bold flex items-center justify-center transition-all hover:bg-secondary-container/60 shadow-xs" type="button">
+            3
+          </button>
+<!-- 4: Flagged for review (amber indicator) -->
+<div class="relative">
+<button class="w-full h-10 rounded-lg bg-surface-container-high text-on-surface font-label-md text-label-md font-bold flex items-center justify-center transition-all hover:bg-surface-container" type="button">
+              4
+            </button>
+<span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-error-container text-error flex items-center justify-center text-[10px] font-bold shadow-xs">
+<span class="material-symbols-outlined text-[12px]">flag</span>
+</span>
+</div>
+<!-- 5: Answered -->
+<button class="h-10 rounded-lg bg-secondary-container/40 text-on-secondary-container font-label-md text-label-md font-bold flex items-center justify-center transition-all hover:bg-secondary-container/60 shadow-xs" type="button">
+            5
+          </button>
+<!-- 6: CURRENT ACTIVE QUESTION -->
+<button class="h-10 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md font-bold flex items-center justify-center shadow-md scale-105" type="button">
+            6
+          </button>
+<!-- 7: Unanswered -->
+<button class="h-10 rounded-lg bg-surface-container-low text-on-surface-variant font-label-md text-label-md font-medium flex items-center justify-center transition-all hover:bg-surface-container" type="button">
+            7
+          </button>
+<!-- 8: Unanswered -->
+<button class="h-10 rounded-lg bg-surface-container-low text-on-surface-variant font-label-md text-label-md font-medium flex items-center justify-center transition-all hover:bg-surface-container" type="button">
+            8
+          </button>
+<!-- 9: Unanswered -->
+<button class="h-10 rounded-lg bg-surface-container-low text-on-surface-variant font-label-md text-label-md font-medium flex items-center justify-center transition-all hover:bg-surface-container" type="button">
+            9
+          </button>
+<!-- 10: Unanswered -->
+<button class="h-10 rounded-lg bg-surface-container-low text-on-surface-variant font-label-md text-label-md font-medium flex items-center justify-center transition-all hover:bg-surface-container" type="button">
+            10
+          </button>
+<!-- 11: Unanswered -->
+<button class="h-10 rounded-lg bg-surface-container-low text-on-surface-variant font-label-md text-label-md font-medium flex items-center justify-center transition-all hover:bg-surface-container" type="button">
+            11
+          </button>
+<!-- 12: Unanswered -->
+<button class="h-10 rounded-lg bg-surface-container-low text-on-surface-variant font-label-md text-label-md font-medium flex items-center justify-center transition-all hover:bg-surface-container" type="button">
+            12
+          </button>
+<!-- 13: Unanswered -->
+<button class="h-10 rounded-lg bg-surface-container-low text-on-surface-variant font-label-md text-label-md font-medium flex items-center justify-center transition-all hover:bg-surface-container" type="button">
+            13
+          </button>
+<!-- 14: Unanswered -->
+<button class="h-10 rounded-lg bg-surface-container-low text-on-surface-variant font-label-md text-label-md font-medium flex items-center justify-center transition-all hover:bg-surface-container" type="button">
+            14
+          </button>
+<!-- 15: Unanswered -->
+<button class="h-10 rounded-lg bg-surface-container-low text-on-surface-variant font-label-md text-label-md font-medium flex items-center justify-center transition-all hover:bg-surface-container" type="button">
+            15
+          </button>
+</div>
+<!-- Legend -->
+<div class="pt-space-xs flex flex-wrap gap-x-space-md gap-y-space-xs text-caption font-caption text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded bg-primary-container"></span>
+<span>Current</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded bg-secondary-container"></span>
+<span>Answered</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded bg-error-container"></span>
+<span>Flagged</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded bg-surface-container-low"></span>
+<span>Unanswered</span>
+</div>
+</div>
+<!-- Quick actions -->
+<div class="pt-space-sm flex flex-col gap-space-xs">
+<button class="w-full py-space-sm px-space-md rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container font-label-md text-label-md font-medium flex items-center justify-center gap-space-xs transition-colors" id="flagToggleBtn" type="button">
+<span class="material-symbols-outlined text-[18px] text-error" id="flagIcon">flag</span>
+<span id="flagLabel">Flag Current Question</span>
+</button>
+<button class="w-full py-space-sm px-space-md rounded-full bg-surface-container-lowest hover:bg-surface-container-low text-primary font-label-md text-label-md font-medium flex items-center justify-center gap-space-xs transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">checklist</span>
+<span>Review All Responses (5/15)</span>
+</button>
+</div>
+</div>
+<!-- Proctor & Integrity reassurance box -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex items-start gap-space-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0">verified_user</span>
+<div class="space-y-0.5">
+<div class="font-label-md text-label-md text-on-surface font-semibold">Automatic Autosave Active</div>
+<p class="font-caption text-caption">Responses are encrypted and synced to cloud ledger every 10 seconds. You will not lose state if disconnected.</p>
+</div>
+</div>
+</aside>
+<!-- RIGHT/MAIN PANEL: Primary Quiz Card and Options -->
+<main class="lg:col-span-8 xl:col-span-8 flex flex-col gap-space-md order-1 lg:order-2">
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_1px_3px_rgba(15,23,42,0.04)] p-space-lg flex flex-col gap-space-lg">
+<!-- Question Meta Banner -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm pb-space-sm">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-md text-label-md font-bold">
+              Question 6
+            </span>
+<span class="px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-medium">
+              4 Points
+            </span>
+<span class="px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-medium">
+              Single Choice
+            </span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-[16px] text-primary">category</span>
+            Topic: Binary Search Trees &amp; Recursion
+          </span>
+</div>
+<!-- Question Prompt -->
+<div class="space-y-space-xs">
+<h2 class="font-headline-md text-headline-md text-on-surface leading-snug">
+            Given a binary tree where each node contains an integer key, which traversal order visits the root node strictly between its left subtree and its right subtree?
+          </h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Analyze the structure shown below. Consider which sequence yields an ascending order of values when evaluated over a valid Binary Search Tree (BST).
+          </p>
+</div>
+<!-- Visual ASCII/Structure Block -->
+<div class="rounded-xl bg-surface-container-low p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between text-caption font-caption text-on-surface-variant">
+<span class="flex items-center gap-1 font-semibold text-on-surface">
+<span class="material-symbols-outlined text-[16px]">account_tree</span>
+              Sample Binary Tree Representation
+            </span>
+<span>Height: 2 • Keys: {2, 5, 7, 10, 15}</span>
+</div>
+<div class="p-space-md bg-surface-container-lowest rounded-lg font-mono text-label-md text-on-surface flex justify-center items-center select-none overflow-x-auto">
+<pre class="leading-tight text-center font-bold text-primary">       [ 10 ]
+      /      \
+   [ 5 ]    [ 15 ]
+  /     \
+[ 2 ]   [ 7 ]
+            </pre>
+</div>
+</div>
+<!-- Multiple Choice Options (4 Choices) -->
+<form class="flex flex-col gap-space-sm" id="mcqForm">
+<!-- Option A -->
+<label class="group relative flex items-start gap-space-md p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container cursor-pointer transition-all">
+<input class="mt-1 w-4 h-4 text-primary bg-surface-container-lowest focus:ring-primary focus:ring-offset-0" name="traversal_quiz" type="radio" value="A"/>
+<div class="flex flex-col gap-0.5">
+<span class="font-label-md text-label-md font-bold text-on-surface flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-surface-container-lowest flex items-center justify-center text-caption font-bold text-on-surface-variant group-hover:bg-primary group-hover:text-on-primary transition-colors">A</span>
+                Pre-order traversal
+              </span>
+<span class="font-body-md text-body-md text-on-surface-variant">Visits sequence: (Root, Left, Right). Evaluates parents prior to child nodes.</span>
+</div>
+</label>
+<!-- Option B: Selected State -->
+<label class="group relative flex items-start gap-space-md p-space-md rounded-xl bg-surface-container-highest cursor-pointer shadow-xs transition-all">
+<input checked="" class="mt-1 w-4 h-4 text-primary bg-surface-container-lowest focus:ring-primary focus:ring-offset-0" name="traversal_quiz" type="radio" value="B"/>
+<div class="flex flex-col gap-0.5">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-bold text-on-surface flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center text-caption font-bold">B</span>
+                  In-order traversal
+                </span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container/40 text-on-secondary-container font-caption text-caption font-semibold">Your Selection</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Visits sequence: (Left, Root, Right). Processes entire left branch, parent key, then right branch.</span>
+</div>
+</label>
+<!-- Option C -->
+<label class="group relative flex items-start gap-space-md p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container cursor-pointer transition-all">
+<input class="mt-1 w-4 h-4 text-primary bg-surface-container-lowest focus:ring-primary focus:ring-offset-0" name="traversal_quiz" type="radio" value="C"/>
+<div class="flex flex-col gap-0.5">
+<span class="font-label-md text-label-md font-bold text-on-surface flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-surface-container-lowest flex items-center justify-center text-caption font-bold text-on-surface-variant group-hover:bg-primary group-hover:text-on-primary transition-colors">C</span>
+                Post-order traversal
+              </span>
+<span class="font-body-md text-body-md text-on-surface-variant">Visits sequence: (Left, Right, Root). Fully evaluates all subtrees before the current node.</span>
+</div>
+</label>
+<!-- Option D -->
+<label class="group relative flex items-start gap-space-md p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container cursor-pointer transition-all">
+<input class="mt-1 w-4 h-4 text-primary bg-surface-container-lowest focus:ring-primary focus:ring-offset-0" name="traversal_quiz" type="radio" value="D"/>
+<div class="flex flex-col gap-0.5">
+<span class="font-label-md text-label-md font-bold text-on-surface flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-surface-container-lowest flex items-center justify-center text-caption font-bold text-on-surface-variant group-hover:bg-primary group-hover:text-on-primary transition-colors">D</span>
+                Level-order BFS traversal
+              </span>
+<span class="font-body-md text-body-md text-on-surface-variant">Visits sequence breadth-wise across each tier from root depth 0 downward via queue.</span>
+</div>
+</label>
+</form>
+<!-- Scratchpad / Confidence Toggle Segment -->
+<div class="pt-space-xs flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm font-medium hover:bg-surface-container-high transition-colors" onclick="document.getElementById('scratchpadArea').classList.toggle('hidden')" type="button">
+<span class="material-symbols-outlined text-[16px]">edit_note</span>
+<span>Draft Scratchpad</span>
+</button>
+<span class="font-caption text-caption text-on-surface-variant">Private rough work • Not graded</span>
+</div>
+<div class="flex items-center gap-1 text-caption font-caption text-on-surface-variant">
+<span>Confidence:</span>
+<button class="px-2 py-0.5 rounded-full bg-surface-container hover:bg-primary hover:text-on-primary transition-colors" type="button">Low</button>
+<button class="px-2 py-0.5 rounded-full bg-surface-container hover:bg-primary hover:text-on-primary transition-colors" type="button">Med</button>
+<button class="px-2 py-0.5 rounded-full bg-secondary-container/40 text-on-secondary-container font-semibold" type="button">High</button>
+</div>
+</div>
+<!-- Hidden Scratchpad Canvas/Box -->
+<div class="hidden rounded-xl bg-surface-container-low p-space-sm" id="scratchpadArea">
+<textarea class="w-full p-space-sm bg-surface-container-lowest rounded-lg font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-lowest" placeholder="Jot quick notes or algorithmic equations here (e.g., In-order on BST: 2, 5, 7, 10, 15 sorted!)" rows="3"></textarea>
+</div>
+<!-- Bottom Action Navigation Bar -->
+<div class="pt-space-md flex flex-wrap items-center justify-between gap-space-md">
+<button class="inline-flex items-center gap-space-xs px-space-lg py-space-sm rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+<span>Previous Question</span>
+</button>
+<button class="font-label-sm text-label-sm text-on-surface-variant hover:text-error underline transition-colors" onclick="document.querySelectorAll('input[name=traversal_quiz]').forEach(e =&gt; e.checked = false)" type="button">
+            Clear Selection
+          </button>
+<button class="inline-flex items-center gap-space-xs px-space-lg py-space-sm rounded-full bg-primary-container text-on-primary hover:opacity-90 font-label-md text-label-md shadow-sm transition-all hover:scale-[1.02]" type="button">
+<span>Next Question</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+</div>
+<!-- Submission Confirmation Modal Backdrop (Hidden by default) -->
+<div class="hidden fixed inset-0 z-50 bg-inverse-surface/60 backdrop-blur-xs flex items-center justify-center p-space-md" id="submitModal">
+<div class="bg-surface-container-lowest rounded-xl max-w-md w-full p-space-lg shadow-xl flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">assignment_turned_in</span>
+</div>
+<button class="p-1 rounded-full text-on-surface-variant hover:bg-surface-container-low" onclick="document.getElementById('submitModal').classList.add('hidden')" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="space-y-space-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface">Submit Quiz Assessment?</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+          You have <strong class="text-on-surface">10 unanswered questions</strong> and <strong class="text-on-surface">1 question marked for review</strong>.
+        </p>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low space-y-1 font-caption text-caption text-on-surface-variant">
+<div class="flex justify-between">
+<span>Total Questions:</span>
+<span class="font-semibold text-on-surface">15</span>
+</div>
+<div class="flex justify-between">
+<span>Answered:</span>
+<span class="font-semibold text-secondary">5</span>
+</div>
+<div class="flex justify-between">
+<span>Time Remaining:</span>
+<span class="font-semibold text-on-surface">18m 45s</span>
+</div>
+</div>
+<div class="flex items-center justify-end gap-space-sm pt-space-xs">
+<button class="px-space-md py-space-sm rounded-full bg-surface-container-low text-on-surface font-label-md text-label-md hover:bg-surface-container" onclick="document.getElementById('submitModal').classList.add('hidden')" type="button">
+          Continue Working
+        </button>
+<button class="px-space-lg py-space-sm rounded-full bg-error text-on-error font-label-md text-label-md hover:opacity-90" type="button">
+          Confirm Submission
+        </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple interactive micro-state toggle for flag status
+  const flagBtn = document.getElementById('flagToggleBtn');
+  const flagLabel = document.getElementById('flagLabel');
+  let isFlagged = false;
+
+  flagBtn.addEventListener('click', () => {
+    isFlagged = !isFlagged;
+    if (isFlagged) {
+      flagBtn.classList.add('bg-error-container', 'text-error');
+      flagLabel.textContent = 'Flagged for Review';
+    } else {
+      flagBtn.classList.remove('bg-error-container', 'text-error');
+      flagLabel.textContent = 'Flag Current Question';
+    }
+  });
+
+  // Countdown clock simulation
+  let totalSeconds = 18 * 60 + 45;
+  const timerElement = document.getElementById('quizTimer');
+
+  setInterval(() => {
+    if (totalSeconds > 0) {
+      totalSeconds--;
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      if (totalSeconds < 300) {
+        timerElement.classList.add('text-error');
+      }
+    }
+  }, 1000);
+</script></main></div></body></html>

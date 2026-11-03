@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "secondary": "#006e2d", "on-background": "#0b1c30", "on-secondary": "#ffffff", "on-secondary-fixed-variant": "#005320", "surface-container-high": "#dce9ff", "on-secondary-container": "#007230", "error-container": "#ffdad6", "surface-variant": "#d3e4fe", "surface-tint": "#0053db", "secondary-fixed-dim": "#62df7d", "on-primary-fixed": "#00174b", "primary-fixed": "#dbe1ff", "surface-container-lowest": "#ffffff", "on-tertiary-fixed-variant": "#3f465c", "on-surface-variant": "#434655", "background": "#f8f9ff", "surface-container-low": "#eff4ff", "on-secondary-fixed": "#002109", "primary": "#004ac6", "tertiary": "#4d556b", "tertiary-container": "#656d84", "on-tertiary-container": "#eef0ff", "primary-container": "#2563eb", "on-error": "#ffffff", "on-tertiary-fixed": "#131b2e", "outline-variant": "#c3c6d7", "primary-fixed-dim": "#b4c5ff", "on-surface": "#0b1c30", "surface-dim": "#cbdbf5", "on-primary": "#ffffff", "secondary-fixed": "#7ffc97", "inverse-surface": "#213145", "on-tertiary": "#ffffff", "tertiary-fixed-dim": "#bec6e0", "surface-container-highest": "#d3e4fe", "surface": "#f8f9ff", "error": "#ba1a1a", "on-primary-container": "#eeefff", "on-primary-fixed-variant": "#003ea8", "inverse-on-surface": "#eaf1ff", "surface-bright": "#f8f9ff", "surface-container": "#e5eeff", "tertiary-fixed": "#dae2fd", "inverse-primary": "#b4c5ff", "on-error-container": "#93000a", "outline": "#737686", "secondary-container": "#7cf994" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-md": "1rem", "space-xs": "0.25rem", "space-xl": "2rem", "margin-sm": "1rem", "margin": "2rem", "space-sm": "0.5rem", "gutter": "1.5rem", "space-lg": "1.5rem", "gutter-sm": "1rem" }, fontFamily: { "headline-xl": ["Inter"], "caption": ["Inter"], "label-md": ["Inter"], "headline-lg": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-xl-mobile": ["Inter"], "headline-md": ["Inter"], "label-sm": ["Inter"] }, fontSize: { "headline-xl": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }], "caption": ["12px", { lineHeight: "16px", fontWeight: "400" }], "label-md": ["14px", { lineHeight: "20px", fontWeight: "500" }], "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "-0.015em", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "headline-xl-mobile": ["28px", { lineHeight: "36px", letterSpacing: "-0.015em", fontWeight: "700" }], "headline-md": ["20px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "600" }], "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.01em", fontWeight: "500" }] } } } }</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-margin-sm flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-xs"><button aria-label="Go back" class="w-11 h-11 flex items-center justify-center rounded-lg text-on-surface hover:bg-surface-container transition-colors" onclick="history.back()" type="button"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-headline-md text-headline-md text-on-surface truncate">Course Details</h1></div><div class="flex items-center gap-space-xs"><button aria-label="More actions" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">more_vert</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full pb-safe">
+<div class="hidden agent-nav-node" data-learnly-route="lesson-player" data-outgoing-routes='[{"target": "course-details", "trigger": "back-button", "label": "Back to CS 101"}, {"target": "assignment-view", "trigger": "quiz-button", "label": "Quiz 4: Tree Traversal Assessment"}]' data-screen-id="b3-lesson-player-mobile" data-screen-title="Lesson Player - Unit 4.3 Memoization"></div>
+<!-- Lesson Title & Course Context Header (No border, clean contrast) -->
+<section class="px-margin-sm pt-space-xs pb-space-sm bg-surface">
+<div class="flex items-center justify-between gap-space-xs">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm">CS 204</span>
+<p class="font-caption text-caption text-on-surface-variant truncate">Advanced Algorithmic Design</p>
+</div>
+<div class="flex items-center gap-space-xs">
+<button aria-label="Bookmark lesson" class="w-8 h-8 rounded-full bg-surface-container-low text-on-surface-variant flex items-center justify-center hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">bookmark_border</span>
+</button>
+<button aria-label="Share lesson" class="w-8 h-8 rounded-full bg-surface-container-low text-on-surface-variant flex items-center justify-center hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">share</span>
+</button>
+</div>
+</div>
+<h2 class="mt- space-xs font-headline-md text-headline-md text-on-surface leading-tight">4.3 Memoization &amp; Dynamic Tree Pruning</h2>
+</section>
+<!-- Mobile 16:9 Video Player (#111827 Dark Stage Canvas) -->
+<section class="w-full px-margin-sm py-space-xs">
+<div class="relative w-full aspect-video rounded-xl bg-inverse-surface shadow-md overflow-hidden flex flex-col justify-between p-space-sm select-none">
+<!-- Video Background Ambient Graphic (Simulated Code Visualization Canvas) -->
+<div class="absolute inset-0 opacity-20 pointer-events-none flex items-center justify-center">
+<svg class="w-full h-full text-primary-fixed" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 400 225">
+<circle class="fill-primary/40 stroke-primary-fixed" cx="200" cy="40" r="14"></circle>
+<line stroke-dasharray="3 3" x1="192" x2="140" y1="52" y2="90"></line>
+<line x1="208" x2="260" y1="52" y2="90"></line>
+<circle class="fill-surface-variant/30" cx="130" cy="100" r="12"></circle>
+<circle class="fill-secondary/50 stroke-secondary-fixed" cx="270" cy="100" r="14"></circle>
+<line x1="120" x2="80" y1="110" y2="150"></line>
+<line stroke-dasharray="2 2" x1="140" x2="180" y1="110" y2="150"></line>
+<circle class="fill-error/30" cx="70" cy="160" r="10"></circle>
+<circle class="fill-secondary/30" cx="190" cy="160" r="10"></circle>
+<path d="M 270 120 L 270 145 L 320 145" stroke="currentColor" stroke-dasharray="2 2" stroke-width="1.2"></path>
+<text fill="#ffffff" font-family="monospace" font-size="10" x="215" y="44">root</text>
+<text fill="#7ffc97" font-family="monospace" font-size="9" x="288" y="104">memo[k]</text>
+<text fill="#ffdad6" font-family="monospace" font-size="8" x="82" y="163">pruned</text>
+</svg>
+</div>
+<!-- Video Player Top Overlay -->
+<div class="relative z-10 flex items-center justify-between text-on-primary">
+<div class="flex items-center gap-space-xs bg-inverse-surface/80 backdrop-blur-md px-2.5 py-1 rounded-full">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-on-primary">Interactive Code Stage</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-2 py-0.5 rounded-full bg-surface-variant/20 hover:bg-surface-variant/30 text-inverse-on-surface font-label-sm text-label-sm backdrop-blur-sm" type="button">
+            1080p
+          </button>
+<button aria-label="Toggle Captions" class="w-7 h-7 rounded-full bg-surface-variant/20 flex items-center justify-center text-inverse-on-surface" type="button">
+<span class="material-symbols-outlined text-[16px]">closed_caption</span>
+</button>
+</div>
+</div>
+<!-- Center Play / Replay Ripple Button -->
+<div class="relative z-10 flex items-center justify-center">
+<button aria-label="Play or Pause" class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-lg active:scale-95 transition-transform" id="player-play-btn" type="button">
+<span class="material-symbols-outlined text-[28px]" id="player-play-icon">play_arrow</span>
+</button>
+</div>
+<!-- Bottom Transport & Scrub Controls -->
+<div class="relative z-10 flex flex-col gap-1 text-on-primary">
+<!-- Scrub Bar -->
+<div class="relative w-full h-1.5 bg-surface-variant/30 rounded-full cursor-pointer flex items-center">
+<div class="h-full bg-primary-container rounded-full" style="width: 63.2%;"></div>
+<div class="w-3.5 h-3.5 bg-on-primary rounded-full shadow-md -ml-1.5 flex items-center justify-center">
+<div class="w-1.5 h-1.5 rounded-full bg-primary-container"></div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center gap-space-xs">
+<span class="font-caption text-caption text-inverse-on-surface tracking-wide">11:42</span>
+<span class="font-caption text-caption text-outline-variant">/</span>
+<span class="font-caption text-caption text-outline-variant">18:30</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="px-2 py-0.5 rounded-full bg-surface-variant/25 text-on-primary font-label-sm text-label-sm hover:bg-surface-variant/40" id="playback-speed-chip" type="button">
+              1.25x
+            </button>
+<button aria-label="Fullscreen" class="text-on-primary hover:text-primary-fixed-dim" type="button">
+<span class="material-symbols-outlined text-[20px]">fullscreen</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Sticky Quick Action Strip -->
+<section class="px-margin-sm py-space-xs flex items-center gap-space-sm">
+<button class="flex-1 h-11 px-space-md rounded-lg bg-secondary text-on-secondary font-label-md text-label-md flex items-center justify-center gap-space-xs shadow-sm active:scale-[0.98] transition-all" id="mark-complete-btn" type="button">
+<span class="material-symbols-outlined text-[20px]" id="complete-icon">check_circle</span>
+<span id="complete-text">Mark as Complete</span>
+</button>
+<button class="h-11 px-space-md rounded-lg bg-surface-container-high text-primary font-label-md text-label-md flex items-center justify-center gap-space-xs active:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">download</span>
+<span>Download (.py)</span>
+</button>
+</section>
+<!-- Prev / Next Navigation Pills -->
+<section class="px-margin-sm py-space-xs flex items-center justify-between gap-space-xs">
+<button class="flex-1 min-w-0 p-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container flex items-center gap-space-xs text-left transition-colors" type="button">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0">chevron_left</span>
+<div class="min-w-0 flex flex-col">
+<span class="font-caption text-caption text-on-surface-variant uppercase tracking-wider">Previous</span>
+<span class="font-label-sm text-label-sm text-on-surface truncate">4.2 Depth-First Search</span>
+</div>
+</button>
+<button class="flex-1 min-w-0 p-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container flex items-center justify-end gap-space-xs text-right transition-colors" type="button">
+<div class="min-w-0 flex flex-col items-end">
+<span class="font-caption text-caption text-on-surface-variant uppercase tracking-wider">Next</span>
+<span class="font-label-sm text-label-sm text-on-surface truncate">4.4 Graph Traversal</span>
+</div>
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0">chevron_right</span>
+</button>
+</section>
+<!-- Horizontally Scrolling Segment Controls -->
+<section class="mt-space-xs px-margin-sm overflow-x-auto no-scrollbar">
+<div class="flex items-center gap-space-xs pb-space-xs min-w-max">
+<button class="tab-btn px-space-md py-2 rounded-full font-label-md text-label-md bg-primary text-on-primary shadow-sm" data-tab="overview" type="button">
+        Overview &amp; Notes
+      </button>
+<button class="tab-btn px-space-md py-2 rounded-full font-label-md text-label-md bg-surface-container text-on-surface-variant hover:bg-surface-container-high" data-tab="curriculum" type="button">
+        Curriculum (6 Modules)
+      </button>
+<button class="tab-btn px-space-md py-2 rounded-full font-label-md text-label-md bg-surface-container text-on-surface-variant hover:bg-surface-container-high" data-tab="transcript" type="button">
+        Transcript
+      </button>
+<button class="tab-btn px-space-md py-2 rounded-full font-label-md text-label-md bg-surface-container text-on-surface-variant hover:bg-surface-container-high" data-tab="discussion" type="button">
+        Discussion (18)
+      </button>
+</div>
+</section>
+<!-- Content Slot: Big-O Cards, Interactive Python Visualizer, & Curriculum Accordion -->
+<main class="px-margin-sm py-space-sm flex flex-col gap-space-md">
+<!-- Big-O Complexity Cards (2-column uniform layout) -->
+<div>
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-md text-label-md text-on-surface">Asymptotic Bounds</span>
+<span class="font-caption text-caption text-secondary font-medium flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">bolt</span> Pruned Branch State
+        </span>
+</div>
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="p-space-sm rounded-xl bg-surface-container-low flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-caption text-caption text-on-surface-variant">Time Complexity</span>
+<span class="material-symbols-outlined text-primary text-[18px]">schedule</span>
+</div>
+<div class="mt-space-xs">
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">O(V + E)</span>
+<p class="font-caption text-caption text-on-surface-variant mt-0.5">Reduced from O(2ⁿ)</p>
+</div>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-caption text-caption text-on-surface-variant">Space Complexity</span>
+<span class="material-symbols-outlined text-secondary text-[18px]">memory</span>
+</div>
+<div class="mt-space-xs">
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">O(depth + N)</span>
+<p class="font-caption text-caption text-on-surface-variant mt-0.5">Call stack &amp; lookup map</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Syntax Highlighted Code Module with One-Tap Copy -->
+<div class="rounded-xl bg-inverse-surface text-inverse-on-surface overflow-hidden shadow-md">
+<div class="px-space-md py-2.5 bg-inverse-surface flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-error"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-secondary-fixed"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-surface-tint"></span>
+<span class="font-caption text-caption text-outline-variant ml-2 font-mono">memoized_prune.py</span>
+</div>
+<button class="flex items-center gap-1 px-2.5 py-1 rounded-md bg-surface-variant/20 hover:bg-surface-variant/30 text-inverse-on-surface font-label-sm text-label-sm active:scale-95 transition-all" id="copy-code-btn" type="button">
+<span class="material-symbols-outlined text-[15px]" id="copy-icon">content_copy</span>
+<span id="copy-label">Copy</span>
+</button>
+</div>
+<div class="p-space-md font-mono text-[13px] leading-relaxed overflow-x-auto">
+<div class="text-outline-variant"># Global memo dictionary caching visited subtrees</div>
+<div><span class="text-secondary-fixed font-semibold">def</span> <span class="text-primary-fixed-dim">prune_tree</span>(node, memo={}):</div>
+<div class="pl-4"><span class="text-secondary-fixed font-semibold">if not</span> node:</div>
+<div class="pl-8"><span class="text-secondary-fixed font-semibold">return</span> <span class="text-primary-fixed-dim">0</span></div>
+<div class="pl-4"><span class="text-secondary-fixed font-semibold">if</span> node.val <span class="text-secondary-fixed font-semibold">in</span> memo:</div>
+<div class="pl-8"><span class="text-secondary-fixed font-semibold">return</span> memo[node.val]  <span class="text-secondary-fixed-dim"># Cache hit: O(1)</span></div>
+<div class="pl-4 text-outline-variant"># Recursive dynamic exploration</div>
+<div class="pl-4">res = node.val + prune_tree(node.left, memo)</div>
+<div class="pl-4">memo[node.val] = res</div>
+<div class="pl-4"><span class="text-secondary-fixed font-semibold">return</span> res</div>
+</div>
+</div>
+<!-- Instructor Card with Delightful Mini Avatar & Note -->
+<div class="p-space-sm rounded-xl bg-surface-container-low flex items-center gap-space-sm">
+<img class="w-11 h-11 rounded-full object-cover shrink-0" data-alt="Portrait photo of a friendly computer science professor in an academic library setting with soft warm daylight, high key resolution, professional educator persona." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwuYswiMN665Z5iDBy7qesEZnEyB33F2IVnCQR2KAS2bJ2aHknDJoWaYdioqajoZjcfO9Jg9T8IUlRqx5r3J9UiPO9JffWW3bAVcNbRUtXDwpPo1XrrbpEc_JnRzHrF49PzBorS_1h9sX3eIaKXzD-YwBToLaBTuZAxbggeN3FCRDxLhSXMQc3_uuiupOQjzjeZym5ukXoiweTEoFxx7ZSwJk00GfA5e08HYhN5ww"/>
+<div class="min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<h4 class="font-label-md text-label-md text-on-surface font-semibold truncate">Prof. Elena Vance</h4>
+<span class="font-caption text-caption text-primary">Instructor Note</span>
+</div>
+<p class="font-caption text-caption text-on-surface-variant line-clamp-2 mt-0.5">
+          "Pay close attention to how memo references survive recursive unwindings. Complete Assessment 4 before tomorrow's lab!"
+        </p>
+</div>
+</div>
+<!-- Expandable Curriculum Accordion Preview -->
+<div class="rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden">
+<div class="p-space-md bg-surface-container-low flex items-center justify-between cursor-pointer" id="curriculum-toggle">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[22px]">folder_open</span>
+<div>
+<h3 class="font-label-md text-label-md text-on-surface font-semibold">Module 4: Tree Traversal &amp; Caching</h3>
+<p class="font-caption text-caption text-on-surface-variant">3 of 5 lessons completed (60%)</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px] transition-transform duration-200" id="accordion-arrow">expand_less</span>
+</div>
+<div class="flex flex-col" id="curriculum-lesson-list">
+<!-- Lesson 4.1 Completed -->
+<div class="px-space-md py-3 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</span>
+<div class="min-w-0">
+<p class="font-label-md text-label-md text-on-surface truncate">4.1 Breadth-First Search Fundamentals</p>
+<span class="font-caption text-caption text-on-surface-variant">14 mins • Completed</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">play_circle</span>
+</div>
+<!-- Lesson 4.2 Completed -->
+<div class="px-space-md py-3 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</span>
+<div class="min-w-0">
+<p class="font-label-md text-label-md text-on-surface truncate">4.2 Depth-First In-Order Traversal</p>
+<span class="font-caption text-caption text-on-surface-variant">21 mins • Completed</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">play_circle</span>
+</div>
+<!-- Lesson 4.3 Active/Playing Lesson -->
+<div class="px-space-md py-3 bg-surface-container flex items-center justify-between">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-sm animate-pulse">
+<span class="material-symbols-outlined text-[16px]">play_arrow</span>
+</span>
+<div class="min-w-0">
+<p class="font-label-md text-label-md text-primary font-semibold truncate">4.3 Memoization &amp; Dynamic Pruning</p>
+<span class="font-caption text-caption text-primary font-medium">Now Playing • 18 mins</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm">Active</span>
+</div>
+<!-- Lesson 4.4 Upcoming -->
+<div class="px-space-md py-3 flex items-center justify-between hover:bg-surface-container-low transition-colors opacity-80">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="w-6 h-6 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[14px]">lock_outline</span>
+</span>
+<div class="min-w-0">
+<p class="font-label-md text-label-md text-on-surface truncate">4.4 Graph Representation Matrices</p>
+<span class="font-caption text-caption text-on-surface-variant">25 mins</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px]">chevron_right</span>
+</div>
+<!-- Assessment 4 Trigger Action -->
+<div class="p-space-md bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="w-7 h-7 rounded-lg bg-surface-tint text-on-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">assignment</span>
+</span>
+<div class="min-w-0">
+<p class="font-label-md text-label-md text-on-surface font-semibold truncate">Quiz 4: Tree Traversal Assessment</p>
+<span class="font-caption text-caption text-secondary font-medium">10 Questions • Graded</span>
+</div>
+</div>
+<button aria-label="Start Quiz 4" class="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm shadow-sm active:scale-95 transition-all" type="button">
+            Take Quiz
+          </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script>
+  // Micro-interaction: Video play/pause toggle
+  const playBtn = document.getElementById('player-play-btn');
+  const playIcon = document.getElementById('player-play-icon');
+  let isPlaying = false;
+
+  playBtn?.addEventListener('click', () => {
+    isPlaying = !isPlaying;
+    playIcon.textContent = isPlaying ? 'pause' : 'play_arrow';
+    playBtn.classList.toggle('bg-primary-container', isPlaying);
+  });
+
+  // Micro-interaction: Mark complete primary button
+  const completeBtn = document.getElementById('mark-complete-btn');
+  const completeIcon = document.getElementById('complete-icon');
+  const completeText = document.getElementById('complete-text');
+  let isDone = false;
+
+  completeBtn?.addEventListener('click', () => {
+    isDone = !isDone;
+    if (isDone) {
+      completeBtn.classList.remove('bg-secondary', 'text-on-secondary');
+      completeBtn.classList.add('bg-secondary-container', 'text-on-secondary-container');
+      completeIcon.textContent = 'task_alt';
+      completeText.textContent = 'Completed!';
+    } else {
+      completeBtn.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+      completeBtn.classList.add('bg-secondary', 'text-on-secondary');
+      completeIcon.textContent = 'check_circle';
+      completeText.textContent = 'Mark as Complete';
+    }
+  });
+
+  // Micro-interaction: Copy Code snippet
+  const copyBtn = document.getElementById('copy-code-btn');
+  const copyLabel = document.getElementById('copy-label');
+  const copyIcon = document.getElementById('copy-icon');
+
+  copyBtn?.addEventListener('click', () => {
+    copyLabel.textContent = 'Copied!';
+    copyIcon.textContent = 'done';
+    setTimeout(() => {
+      copyLabel.textContent = 'Copy';
+      copyIcon.textContent = 'content_copy';
+    }, 2000);
+  });
+
+  // Micro-interaction: Tabs switching
+  const tabs = document.querySelectorAll('.tab-btn');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => {
+        t.classList.remove('bg-primary', 'text-on-primary', 'shadow-sm');
+        t.classList.add('bg-surface-container', 'text-on-surface-variant');
+      });
+      tab.classList.remove('bg-surface-container', 'text-on-surface-variant');
+      tab.classList.add('bg-primary', 'text-on-primary', 'shadow-sm');
+    });
+  });
+
+  // Micro-interaction: Curriculum accordion expand/collapse
+  const accordionToggle = document.getElementById('curriculum-toggle');
+  const accordionList = document.getElementById('curriculum-lesson-list');
+  const accordionArrow = document.getElementById('accordion-arrow');
+
+  accordionToggle?.addEventListener('click', () => {
+    const isHidden = accordionList.classList.toggle('hidden');
+    accordionArrow.textContent = isHidden ? 'expand_more' : 'expand_less';
+  });
+
+  // Micro-interaction: Speed chip cycling
+  const speedChip = document.getElementById('playback-speed-chip');
+  const speeds = ['1.0x', '1.25x', '1.5x', '2.0x'];
+  let speedIdx = 1;
+  speedChip?.addEventListener('click', () => {
+    speedIdx = (speedIdx + 1) % speeds.length;
+    speedChip.textContent = speeds[speedIdx];
+  });
+</script></main></body></html>
