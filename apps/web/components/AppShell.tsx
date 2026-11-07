@@ -10,9 +10,10 @@ import { logoutAction } from "../store/authSlice";
 
 interface AppShellProps {
   children: React.ReactNode;
+  activeNav?: string;
 }
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, activeNav }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useAppDispatch();

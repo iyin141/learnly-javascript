@@ -35,7 +35,7 @@ services:
     volumes: [minio-data:/data]
     ports:
       - "9000:9000"   # S3 API (browser presigned URLs, see ASSUMPTIONS A6)
-      - "127.0.0.1:9001:9001"   # console
+      - "127.0.0.1:9091:9001"   # console
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:9000/minio/health/live || mc ready local"]
       interval: 5s

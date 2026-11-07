@@ -13,6 +13,7 @@ import { docsRouter } from "./routes/docs.js";
 import { uploadsRouter } from "./routes/uploads.js";
 import { builderRouter } from "./routes/builder.js";
 import { adminQueuesRouter } from "./routes/admin-queues.js";
+import { lessonsRouter } from "./routes/lessons.js";
 
 export function createApp(): express.Application {
   const app = express();
@@ -54,6 +55,7 @@ export function createApp(): express.Application {
   app.use("/api/courses", coursesRouter);
   app.use("/api/courses", builderRouter);
   app.use("/api/uploads", uploadsRouter);
+  app.use("/api/lessons", lessonsRouter);
   app.use(adminQueuesRouter);
   app.use("/api/my-courses", (req, res, next) => {
     // Forward /api/my-courses to courses router

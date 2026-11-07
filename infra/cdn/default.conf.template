@@ -1,17 +1,43 @@
 proxy_cache_path /var/cache/nginx/cdn levels=1:2 keys_zone=cdn:50m max_size=5g inactive=1d use_temp_path=off;
 
+map $arg_md5 $sec_md5 {
+    default $arg_md5;
+    "" $cookie_cdn_md5;
+}
+map $arg_expires $sec_exp {
+    default $arg_expires;
+    "" $cookie_cdn_expires;
+}
+
 server {
     listen 80;
 
     location = /cdn-health { access_log off; return 200 "ok\n"; }
 
+    # Playlists get a short TTL (10s)
+    location ~ ^/cdn/hls/.+\.m3u8$ {
+        secure_link $sec_md5,$sec_exp;
+        secure_link_md5 "$secure_link_expires$uri ${CDN_SECRET}";
+        if ($secure_link = "")  { return 403; }
+        if ($secure_link = "0") { return 410; }
+
+        rewrite ^/cdn/(.*)$ /learnly-media/$1 break;
+        proxy_pass http://minio:9000;
+        proxy_set_header Host minio:9000;
+        proxy_cache cdn;
+        proxy_cache_key "$uri";
+        proxy_cache_valid 200 10s;
+        add_header X-Cache $upstream_cache_status always;
+        add_header Access-Control-Allow-Origin * always;
+        add_header Access-Control-Allow-Credentials true always;
+    }
+
     # /cdn/hls/{courseId}/{lessonId}/... -> minio learnly-media/hls/...
-    # Signature: md5=base64url(md5("<expires><uri> ${CDN_SECRET}")), expires=<unix seconds>
+    # Segments (.ts) get a 1-day TTL
     location /cdn/hls/ {
-        secure_link $arg_md5,$arg_expires;
+        secure_link $sec_md5,$sec_exp;
         secure_link_md5 "$secure_link_expires$uri ${CDN_SECRET}";
 
-        # Segment requests may also carry the same token via cookie (added in Phase 3).
         if ($secure_link = "")  { return 403; }
         if ($secure_link = "0") { return 410; }
 
@@ -33,23 +59,7 @@ server {
         add_header Accept-Ranges bytes always;
         add_header X-Cache $upstream_cache_status always;
         add_header Access-Control-Allow-Origin * always;
-    }
-
-    # Playlists get a short TTL
-    location ~ ^/cdn/hls/.+\.m3u8$ {
-        secure_link $arg_md5,$arg_expires;
-        secure_link_md5 "$secure_link_expires$uri ${CDN_SECRET}";
-        if ($secure_link = "")  { return 403; }
-        if ($secure_link = "0") { return 410; }
-
-        rewrite ^/cdn/(.*)$ /learnly-media/$1 break;
-        proxy_pass http://minio:9000;
-        proxy_set_header Host minio:9000;
-        proxy_cache cdn;
-        proxy_cache_key "$uri";
-        proxy_cache_valid 200 10s;
-        add_header X-Cache $upstream_cache_status always;
-        add_header Access-Control-Allow-Origin * always;
+        add_header Access-Control-Allow-Credentials true always;
     }
 
     # Thumbnails and posters are public images
