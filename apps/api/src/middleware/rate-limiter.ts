@@ -16,3 +16,15 @@ export const authRateLimiter = rateLimit({
     );
   },
 });
+
+/** Blanket limiter for every /api route. Per-IP, 300 requests a minute. */
+export const apiRateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: parseInt(process.env.API_RATE_LIMIT || "300", 10),
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.path.startsWith("/healthz") || req.path.startsWith("/readyz"),
+  handler: (_req, _res, _next, options) => {
+    throw new AppError(429, "RATE_LIMIT_EXCEEDED", "Too many requests. Slow down.", { retryAfter: Math.ceil(options.windowMs / 1000) });
+  },
+});

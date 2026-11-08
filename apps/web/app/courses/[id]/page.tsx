@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { CircularProgress } from "../../../components/CircularProgress";
-import { useGetCourseQuery } from "../../../store/apiSlice";
+import { LessonList } from "../../../components/LessonList";
+import { useGetCourseQuery, useGetCourseQuizzesQuery, useEnrollCourseMutation } from "../../../store/apiSlice";
 
 export default function CourseOverviewPage() {
   const params = useParams();
@@ -14,10 +15,22 @@ export default function CourseOverviewPage() {
 
   const { data: serverData, isLoading } = useGetCourseQuery(courseId);
   const course = serverData?.course;
+  const enrolment = serverData?.enrolment;
+  const { data: quizzes } = useGetCourseQuizzesQuery(courseId, { skip: !enrolment });
+  const [enroll, { isLoading: enrolling }] = useEnrollCourseMutation();
+  const completed = new Set(enrolment?.completedLessons ?? []);
+  const flat = (course?.sections ?? []).flatMap((s) => s.lessons);
+  const resumeLesson = flat.find((l) => l.id === enrolment?.lastLessonId) ?? flat.find((l) => !completed.has(l.id)) ?? flat[0];
+
+  // honour ?tab= from the CourseTabs links used on other course routes
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("tab");
+    if (t === "lessons" || t === "quizzes" || t === "live" || t === "people") setActiveTab(t);
+  }, []);
 
   const title = course?.title || "CS 101: Introduction to Python & Algorithms";
   const instructor = course?.instructorName || "Prof. Alan Vance";
-  const progressPercent = 68;
+  const progressPercent = enrolment?.progressPercent ?? 0;
 
   return (
     <div className="w-full p-margin-sm md:p-margin flex flex-col gap-space-lg">
@@ -158,19 +171,22 @@ export default function CourseOverviewPage() {
               <CircularProgress percent={progressPercent} size={64} strokeWidth={5} />
               <div className="flex flex-col">
                 <span className="font-label-md text-label-md font-semibold text-white">Progress Track</span>
-                <span className="font-caption text-caption text-white/80">32 of 48 Modules complete</span>
+                <span className="font-caption text-caption text-white/80">{completed.size} of {flat.length} lessons complete</span>
                 <span className="font-caption text-caption text-emerald-300 font-medium mt-0.5">
-                  Top 15% of Cohort
+                  {enrolment ? `${progressPercent}% done` : "Not enrolled"}
                 </span>
               </div>
             </div>
-            <Link
-              href={`/courses/${courseId}/lessons/lesson-1`}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-space-xs px-space-lg py-space-sm bg-white text-primary hover:bg-white/90 font-label-md text-label-md font-semibold rounded-full shadow-md transition-all active:scale-95"
-            >
-              <span>Continue to Module 4</span>
-              <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-            </Link>
+{enrolment ? (
+              <Link href={`/courses/${courseId}/lessons/${resumeLesson?.id ?? ""}`} className="w-full sm:w-auto min-h-11 inline-flex items-center justify-center gap-space-xs px-space-lg py-space-sm bg-white text-primary hover:bg-white/90 font-label-md text-label-md font-semibold rounded-full shadow-md transition-all active:scale-95 disabled:opacity-60">
+                <span>{completed.size ? "Continue learning" : "Start course"}</span>
+                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+              </Link>
+            ) : (
+              <button disabled={enrolling} onClick={() => enroll(courseId)} className="w-full sm:w-auto min-h-11 inline-flex items-center justify-center gap-space-xs px-space-lg py-space-sm bg-white text-primary hover:bg-white/90 font-label-md text-label-md font-semibold rounded-full shadow-md transition-all active:scale-95 disabled:opacity-60">
+                <span>{enrolling ? "Enrolling..." : "Enrol in this course"}</span>
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -258,112 +274,31 @@ export default function CourseOverviewPage() {
               <span className="font-label-sm text-label-sm text-primary font-semibold">Expand all</span>
             </div>
 
-            {/* Units list */}
-            <div className="flex flex-col gap-space-md mt-space-sm">
-              {/* Unit 1 */}
-              <div className="border border-border rounded-xl overflow-hidden">
-                <div className="p-space-md bg-canvas/60 flex items-center justify-between cursor-pointer">
-                  <div className="flex items-center gap-space-sm">
-                    <span className="material-symbols-outlined text-accent text-[20px]">check_circle</span>
-                    <div>
-                      <h3 className="font-label-md text-label-md text-ink font-semibold">
-                        Unit 1: Python Fundamentals &amp; Setup
-                      </h3>
-                      <p className="font-caption text-caption text-ink-secondary">6 lessons • 100% completed</p>
-                    </div>
-                  </div>
-                  <span className="material-symbols-outlined text-ink-secondary text-[20px]">expand_more</span>
-                </div>
-              </div>
+            {/* Curriculum from the API; quizzes below */}
+            {isLoading ? (
+              <div className="h-40 rounded-xl bg-border animate-pulse" />
+            ) : (course?.sections?.length ?? 0) > 0 ? (
+              <LessonList courseId={courseId} sections={course!.sections!} completed={completed} activeLessonId={resumeLesson?.id} />
+            ) : (
+              <p className="text-ink-secondary">No lessons have been published for this course yet.</p>
+            )}
 
-              {/* Unit 2 */}
-              <div className="border border-border rounded-xl overflow-hidden">
-                <div className="p-space-md bg-canvas/60 flex items-center justify-between cursor-pointer">
-                  <div className="flex items-center gap-space-sm">
-                    <span className="material-symbols-outlined text-accent text-[20px]">check_circle</span>
-                    <div>
-                      <h3 className="font-label-md text-label-md text-ink font-semibold">
-                        Unit 2: Conditionals, Loops &amp; Functions
-                      </h3>
-                      <p className="font-caption text-caption text-ink-secondary">8 lessons • 100% completed</p>
-                    </div>
-                  </div>
-                  <span className="material-symbols-outlined text-ink-secondary text-[20px]">expand_more</span>
-                </div>
-              </div>
-
-              {/* Unit 3 */}
-              <div className="border border-border rounded-xl overflow-hidden">
-                <div className="p-space-md bg-canvas/60 flex items-center justify-between cursor-pointer">
-                  <div className="flex items-center gap-space-sm">
-                    <span className="material-symbols-outlined text-accent text-[20px]">check_circle</span>
-                    <div>
-                      <h3 className="font-label-md text-label-md text-ink font-semibold">
-                        Unit 3: Data Structures (Lists, Tuples, Dictionaries)
-                      </h3>
-                      <p className="font-caption text-caption text-ink-secondary">10 lessons • 100% completed</p>
-                    </div>
-                  </div>
-                  <span className="material-symbols-outlined text-ink-secondary text-[20px]">expand_more</span>
-                </div>
-              </div>
-
-              {/* Unit 4: In Progress */}
-              <div className="border-2 border-primary/40 rounded-xl overflow-hidden bg-primary/[0.02]">
-                <div className="p-space-md bg-primary/[0.06] flex items-center justify-between cursor-pointer">
-                  <div className="flex items-center gap-space-sm">
-                    <div className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
-                    <div>
-                      <h3 className="font-label-md text-label-md text-ink font-bold">
-                        Unit 4: Recursion &amp; Algorithmic Thinking
-                      </h3>
-                      <p className="font-caption text-caption text-primary font-medium">8 lessons • In progress (4/8)</p>
-                    </div>
-                  </div>
-                  <span className="material-symbols-outlined text-primary text-[20px]">expand_less</span>
-                </div>
-
-                {/* Expanded Lessons in Unit 4 */}
-                <div className="p-space-md flex flex-col gap-space-sm border-t border-primary/20">
-                  <div className="flex items-center justify-between py-2 border-b border-border">
-                    <div className="flex items-center gap-space-sm">
-                      <span className="material-symbols-outlined text-accent text-[18px]">check_circle</span>
-                      <span className="font-body-md text-body-md text-ink">4.1 Introduction to Call Stacks</span>
-                    </div>
-                    <span className="font-caption text-caption text-ink-secondary">14 mins</span>
-                  </div>
-                  <div className="flex items-center justify-between py-2 border-b border-border">
-                    <div className="flex items-center gap-space-sm">
-                      <span className="material-symbols-outlined text-accent text-[18px]">check_circle</span>
-                      <span className="font-body-md text-body-md text-ink">4.2 Base Cases &amp; Recursion Depth</span>
-                    </div>
-                    <span className="font-caption text-caption text-ink-secondary">18 mins</span>
-                  </div>
-                  <div className="flex items-center justify-between py-2 border-b border-border bg-primary/10 px-2 rounded-lg">
-                    <div className="flex items-center gap-space-sm">
-                      <span className="material-symbols-outlined text-primary text-[18px]">play_circle</span>
-                      <span className="font-body-md text-body-md text-primary font-semibold">
-                        4.3 Tree Traversal: Pre-Order &amp; In-Order
+            <div id="quizzes" className={activeTab === "quizzes" ? "ring-2 ring-primary/30 rounded-xl" : ""}>
+              <h3 className="font-headline-md text-headline-md text-ink mb-space-sm">Quizzes</h3>
+              {(quizzes?.quizzes ?? []).length === 0 && <p className="text-ink-secondary font-body-md">{enrolment ? "No quizzes yet." : "Enrol to see quizzes."}</p>}
+              <ul className="flex flex-col gap-space-sm">
+                {(quizzes?.quizzes ?? []).map((q) => (
+                  <li key={q.id}>
+                    <Link href={`/courses/${courseId}/quizzes/${q.id}`} className="min-h-11 flex items-center justify-between gap-space-sm bg-canvas rounded-xl p-space-md hover:border-primary border border-transparent">
+                      <span>
+                        <span className="block font-label-md text-label-md text-ink">{q.title}</span>
+                        <span className="block font-caption text-caption text-ink-secondary">{q.questionCount} questions, {q.timeLimitMinutes} min, pass {q.passMarkPercent}%</span>
                       </span>
-                    </div>
-                    <Link
-                      href={`/courses/${courseId}/lessons/lesson-1`}
-                      className="px-3 py-1 bg-primary text-white text-xs rounded-full font-semibold"
-                    >
-                      Resume
+                      <span className={`font-caption px-2 py-0.5 rounded-full ${q.passed ? "bg-chip-done-bg text-chip-done-fg" : "bg-slate-200 text-ink-secondary"}`}>{q.passed ? "Passed" : `${q.attemptsUsed}/${q.maxAttempts} attempts`}</span>
                     </Link>
-                  </div>
-                  <div className="flex items-center justify-between py-2">
-                    <div className="flex items-center gap-space-sm">
-                      <span className="material-symbols-outlined text-ink-muted text-[18px]">radio_button_unchecked</span>
-                      <span className="font-body-md text-body-md text-ink-secondary">
-                        4.4 Binary Search Trees in Python
-                      </span>
-                    </div>
-                    <span className="font-caption text-caption text-ink-secondary">22 mins</span>
-                  </div>
-                </div>
-              </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>

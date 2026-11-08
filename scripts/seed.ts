@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import { UserModel, CourseModel, SectionModel, LessonModel, EnrolmentModel } from "../apps/api/src/db.js";
+import { QuizModel, QuestionModel, AttemptModel, CertificateModel, LiveSessionModel, PaymentModel } from "../apps/api/src/db-learning.js";
 
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/learnly";
 
@@ -14,6 +15,7 @@ async function seed() {
   await SectionModel.deleteMany({});
   await LessonModel.deleteMany({});
   await EnrolmentModel.deleteMany({});
+  for (const m of [QuizModel, QuestionModel, AttemptModel, CertificateModel, LiveSessionModel, PaymentModel]) await m.deleteMany({});
 
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash("password123", salt);

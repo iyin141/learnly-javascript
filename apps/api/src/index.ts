@@ -23,6 +23,8 @@ async function main(): Promise<void> {
     },
   });
 
+  app.set("io", io);
+
   try {
     const subRedis = redis.duplicate();
     await subRedis.connect();
@@ -40,7 +42,7 @@ async function main(): Promise<void> {
     });
 
     socket.on("join:class", (sessionId: string) => {
-      socket.join(`class:${sessionId}`);
+      socket.join(`live:${sessionId}`);
     });
 
     socket.on("disconnect", () => {

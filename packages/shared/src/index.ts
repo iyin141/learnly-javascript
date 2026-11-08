@@ -134,3 +134,129 @@ export interface ApiErrorResponse {
     requestId?: string;
   };
 }
+
+// --- Playback ---
+export interface Playback {
+  playbackUrl: string;
+  expiresAt: number;
+  lastPositionSeconds: number;
+  isCompleted: boolean;
+  durationSeconds: number;
+  renditions: string[];
+}
+
+// --- Quizzes ---
+export type QuestionType = "single" | "multiple" | "true_false" | "short";
+
+export interface QuizSummary {
+  id: string;
+  courseId: string;
+  title: string;
+  description: string;
+  unitLabel?: string;
+  timeLimitMinutes: number;
+  passMarkPercent: number;
+  maxAttempts: number;
+  questionCount: number;
+  totalPoints: number;
+  attemptsUsed: number;
+  bestScorePercent?: number;
+  passed?: boolean;
+  required: boolean;
+}
+
+export interface QuizQuestionPublic {
+  id: string;
+  type: QuestionType;
+  prompt: string;
+  topic?: string;
+  points: number;
+  options: { id: string; text: string }[];
+}
+
+export interface AttemptStart {
+  attemptId: string;
+  quizId: string;
+  startedAt: string;
+  endsAt: string;
+  serverNow: string;
+  questions: QuizQuestionPublic[];
+  answers: Record<string, unknown>;
+  flagged: string[];
+}
+
+export interface AttemptResult {
+  attemptId: string;
+  scorePoints: number;
+  maxPoints: number;
+  scorePercent: number;
+  passed: boolean;
+  timedOut: boolean;
+  certificateIssued?: boolean;
+  review: {
+    questionId: string;
+    prompt: string;
+    correct: boolean;
+    earned: number;
+    points: number;
+    explanation?: string;
+    correctOptionIds: string[];
+    given: unknown;
+  }[];
+}
+
+// --- Certificates ---
+export interface CertificateInfo {
+  id: string;
+  code: string;
+  courseId: string;
+  courseTitle: string;
+  studentName: string;
+  instructorName: string;
+  issuedAt: string;
+  hours: number;
+}
+
+// --- Live ---
+export type LiveStatus = "scheduled" | "live" | "ended";
+export interface LiveSessionInfo {
+  id: string;
+  courseId: string;
+  courseTitle: string;
+  title: string;
+  code: string;
+  instructorId: string;
+  instructorName: string;
+  startsAt: string;
+  durationMinutes: number;
+  status: LiveStatus;
+  recording?: boolean;
+  isHost?: boolean;
+}
+
+// --- Pure rules (unit tested in apps/api) ---
+export interface ScorableQuestion {
+  id: string;
+  type: QuestionType;
+  points: number;
+  correct: string[]; // option ids, or accepted short answers (lowercase)
+}
+
+export function scoreAnswer(q: ScorableQuestion, given: unknown): number {
+  if (given == null) return 0;
+  if (q.type === "short") {
+    return q.correct.includes(String(given).trim().toLowerCase()) ? q.points : 0;
+  }
+  const g = (Array.isArray(given) ? given : [given]).map(String).sort();
+  const c = [...q.correct].sort();
+  return g.length === c.length && g.every((v, i) => v === c[i]) ? q.points : 0;
+}
+
+export function courseComplete(
+  lessonIds: string[],
+  completed: string[],
+  requiredQuizzes: { id: string; passed: boolean }[]
+): boolean {
+  const done = new Set(completed);
+  return lessonIds.length > 0 && lessonIds.every((l) => done.has(l)) && requiredQuizzes.every((q) => q.passed);
+}

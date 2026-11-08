@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 const PROTECTED_PREFIXES = ["/todo", "/calendar", "/instructor", "/admin"];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const refreshToken = req.cookies.get("refreshToken")?.value;
 

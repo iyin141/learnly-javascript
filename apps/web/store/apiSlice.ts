@@ -8,6 +8,12 @@ import type {
   LoginRequest,
   RegisterRequest,
   AuthResponse,
+  Playback,
+  QuizSummary,
+  AttemptStart,
+  AttemptResult,
+  CertificateInfo,
+  LiveSessionInfo,
 } from "@learnly/shared";
 
 const rawBaseQuery = fetchBaseQuery({
@@ -53,7 +59,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["User", "Courses", "Course", "MyCourses"],
+  tagTypes: ["User", "Courses", "Course", "MyCourses", "Quizzes", "Certificates", "Live", "Admin", "Instructor"],
   endpoints: (builder) => ({
     // Auth
     login: builder.mutation<AuthResponse, LoginRequest>({
@@ -135,10 +141,183 @@ export const apiSlice = createApi({
       query: (status) => (status ? `/my-courses?status=${status}` : "/my-courses"),
       providesTags: ["MyCourses"],
     }),
+    // Lessons / playback
+    getPlayback: builder.query<Playback, string>({
+      query: (lessonId) => `/lessons/${lessonId}/playback`,
+      keepUnusedDataFor: 0,
+    }),
+    saveProgress: builder.mutation<
+      { progressPercent: number; completed: boolean },
+      { lessonId: string; positionSeconds: number }
+    >({
+      query: ({ lessonId, positionSeconds }) => ({
+        url: `/lessons/${lessonId}/progress`,
+        method: "POST",
+        body: { positionSeconds },
+      }),
+      invalidatesTags: (r) => (r?.completed ? ["MyCourses"] : []),
+    }),
+    markComplete: builder.mutation<{ progressPercent: number }, string>({
+      query: (lessonId) => ({ url: `/lessons/${lessonId}/complete`, method: "POST" }),
+      invalidatesTags: ["MyCourses", "Course"],
+    }),
+
+    // Quizzes
+    getCourseQuizzes: builder.query<{ quizzes: QuizSummary[] }, string>({
+      query: (courseId) => `/courses/${courseId}/quizzes`,
+      providesTags: ["Quizzes"],
+    }),
+    getQuiz: builder.query<{ quiz: QuizSummary }, string>({
+      query: (id) => `/quizzes/${id}`,
+      providesTags: ["Quizzes"],
+    }),
+    startAttempt: builder.mutation<AttemptStart, string>({
+      query: (quizId) => ({ url: `/quizzes/${quizId}/attempts`, method: "POST" }),
+      invalidatesTags: ["Quizzes"],
+    }),
+    saveAnswer: builder.mutation<{ ok: boolean }, { attemptId: string; questionId: string; answer: unknown; flagged?: boolean }>({
+      query: ({ attemptId, ...body }) => ({ url: `/attempts/${attemptId}/answers`, method: "PUT", body }),
+    }),
+    submitAttempt: builder.mutation<AttemptResult, string>({
+      query: (attemptId) => ({ url: `/attempts/${attemptId}/submit`, method: "POST" }),
+      invalidatesTags: ["Quizzes", "MyCourses", "Certificates"],
+    }),
+
+    // Certificates
+    getCertificates: builder.query<{ certificates: CertificateInfo[] }, void>({
+      query: () => "/certificates",
+      providesTags: ["Certificates"],
+    }),
+    getCertificate: builder.query<{ certificate: CertificateInfo }, string>({
+      query: (id) => `/certificates/${id}`,
+      providesTags: ["Certificates"],
+    }),
+    getCertificateDownload: builder.query<{ url: string }, string>({
+      query: (id) => `/certificates/${id}/download`,
+      keepUnusedDataFor: 0,
+    }),
+    verifyCertificate: builder.query<{ valid: boolean; certificate?: CertificateInfo }, string>({
+      query: (code) => `/verify/${code}`,
+    }),
+
+    // Instructor
+    getInstructorCourses: builder.query<{ courses: { id: string; title: string; code: string; status: string; lessons: number; students: number }[] }, void>({
+      query: () => "/instructor/courses",
+      providesTags: ["Instructor"],
+    }),
+    submitForReview: builder.mutation<{ status: string }, string>({
+      query: (id) => ({ url: `/instructor/courses/${id}/submit`, method: "POST" }),
+      invalidatesTags: ["Instructor"],
+    }),
+    getRevenue: builder.query<{ rows: { courseId: string; course: string; month: string; enrolments: number; earningsCents: number }[]; totalEnrolments: number; totalEarningsCents: number }, void>({
+      query: () => "/instructor/revenue",
+    }),
+    createQuiz: builder.mutation<{ quiz: QuizSummary }, { courseId: string; body: unknown }>({
+      query: ({ courseId, body }) => ({ url: `/courses/${courseId}/quizzes`, method: "POST", body }),
+      invalidatesTags: ["Quizzes"],
+    }),
+    getQuizAnalytics: builder.query<{ attempts: number; passRate: number | null; avgScorePercent: number | null; perQuestion: { questionId: string; prompt: string; answered: number; correctRate: number | null }[] }, string>({
+      query: (id) => `/quizzes/${id}/analytics`,
+    }),
+
+    // Admin
+    getAdminUsers: builder.query<{ users: { id: string; name: string; email: string; role: string }[] }, void>({
+      query: () => "/admin/users",
+      providesTags: ["Admin"],
+    }),
+    setUserRole: builder.mutation<unknown, { id: string; role: string }>({
+      query: ({ id, role }) => ({ url: `/admin/users/${id}`, method: "PATCH", body: { role } }),
+      invalidatesTags: ["Admin"],
+    }),
+    getAdminCourses: builder.query<{ courses: { id: string; title: string; code: string; status: string; instructorName: string }[] }, string>({
+      query: (status) => `/admin/courses?status=${status}`,
+      providesTags: ["Admin"],
+    }),
+    decideCourse: builder.mutation<unknown, { id: string; approve: boolean }>({
+      query: ({ id, approve }) => ({ url: `/admin/courses/${id}/decision`, method: "POST", body: { approve } }),
+      invalidatesTags: ["Admin", "Courses"],
+    }),
+    getAdminReports: builder.query<Record<string, number>, void>({
+      query: () => "/admin/reports",
+    }),
+
+    // Live
+    getLiveSessions: builder.query<{ sessions: LiveSessionInfo[] }, void>({
+      query: () => "/live",
+      providesTags: ["Live"],
+    }),
+    getLiveSession: builder.query<{ session: LiveSessionInfo }, string>({
+      query: (id) => `/live/${id}`,
+      providesTags: ["Live"],
+    }),
+    startLiveSession: builder.mutation<{ session: LiveSessionInfo }, string>({
+      query: (id) => ({ url: `/live/${id}/start`, method: "POST" }),
+      invalidatesTags: ["Live"],
+    }),
+    endLiveSession: builder.mutation<{ session: LiveSessionInfo }, string>({
+      query: (id) => ({ url: `/live/${id}/end`, method: "POST" }),
+      invalidatesTags: ["Live"],
+    }),
+    joinLiveByCode: builder.mutation<{ session: LiveSessionInfo }, string>({
+      query: (code) => ({ url: `/live/join-by-code`, method: "POST", body: { code } }),
+    }),
+    getLiveMessages: builder.query<{ messages: { id: string; userName: string; role?: string; text: string }[] }, string>({
+      query: (id) => `/live/${id}/messages`,
+      keepUnusedDataFor: 0,
+    }),
+    postLiveMessage: builder.mutation<{ id: string }, { id: string; text: string }>({
+      query: ({ id, text }) => ({ url: `/live/${id}/messages`, method: "POST", body: { text } }),
+    }),
+    grantMic: builder.mutation<{ ok: boolean }, { id: string; identity: string; allow: boolean }>({
+      query: ({ id, ...body }) => ({ url: `/live/${id}/grant`, method: "POST", body }),
+    }),
+    leaveLive: builder.mutation<{ ok: boolean }, string>({
+      query: (id) => ({ url: `/live/${id}/leave`, method: "POST" }),
+    }),
+    scheduleLive: builder.mutation<{ session: LiveSessionInfo }, { courseId: string; title: string; startsAt: string; durationMinutes: number }>({
+      query: ({ courseId, ...body }) => ({ url: `/courses/${courseId}/live`, method: "POST", body }),
+      invalidatesTags: ["Live"],
+    }),
+    getLiveToken: builder.mutation<{ token: string; url: string; canPublish: boolean }, string>({
+      query: (id) => ({ url: `/live/${id}/token`, method: "POST" }),
+    }),
   }),
 });
 
 export const {
+  useGetPlaybackQuery,
+  useSaveProgressMutation,
+  useMarkCompleteMutation,
+  useGetCourseQuizzesQuery,
+  useGetQuizQuery,
+  useStartAttemptMutation,
+  useSaveAnswerMutation,
+  useSubmitAttemptMutation,
+  useGetCertificatesQuery,
+  useGetCertificateQuery,
+  useLazyGetCertificateDownloadQuery,
+  useVerifyCertificateQuery,
+  useGetInstructorCoursesQuery,
+  useSubmitForReviewMutation,
+  useGetRevenueQuery,
+  useCreateQuizMutation,
+  useGetQuizAnalyticsQuery,
+  useGetAdminUsersQuery,
+  useSetUserRoleMutation,
+  useGetAdminCoursesQuery,
+  useDecideCourseMutation,
+  useGetAdminReportsQuery,
+  useGetLiveSessionsQuery,
+  useGetLiveSessionQuery,
+  useStartLiveSessionMutation,
+  useEndLiveSessionMutation,
+  useJoinLiveByCodeMutation,
+  useGetLiveTokenMutation,
+  useGetLiveMessagesQuery,
+  usePostLiveMessageMutation,
+  useGrantMicMutation,
+  useLeaveLiveMutation,
+  useScheduleLiveMutation,
   useLoginMutation,
   useRegisterMutation,
   useLogoutMutation,

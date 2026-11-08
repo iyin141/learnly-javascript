@@ -1,5 +1,6 @@
 "use client";
 
+import { authFetch } from "../store/authFetch";
 import React, { useState, useEffect } from "react";
 import { UploadCloud, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 
@@ -32,7 +33,7 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
         setStatusText("Initializing multipart upload...");
 
         // 1. Init multipart upload
-        const initRes = await fetch("/api/uploads/video/init", {
+        const initRes = await authFetch("/api/uploads/video/init", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -56,7 +57,7 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
         setStatusText(`Generating presigned URLs for ${totalParts} parts...`);
         const partNumbers = Array.from({ length: totalParts }, (_, i) => i + 1);
 
-        const urlsRes = await fetch("/api/uploads/video/part-urls", {
+        const urlsRes = await authFetch("/api/uploads/video/part-urls", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ uploadId, key, partNumbers }),
@@ -99,7 +100,7 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
         setStatus("processing");
         setStatusText("Completing upload and enqueuing transcode job...");
 
-        const compRes = await fetch("/api/uploads/video/complete", {
+        const compRes = await authFetch("/api/uploads/video/complete", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

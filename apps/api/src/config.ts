@@ -29,6 +29,7 @@ export const config = {
   },
   livekit: {
     url: process.env.LIVEKIT_URL || "ws://127.0.0.1:7880",
+    publicUrl: process.env.LIVEKIT_PUBLIC_URL || "ws://localhost:7880",
     apiKey: process.env.LIVEKIT_API_KEY || "devkey",
     apiSecret: process.env.LIVEKIT_API_SECRET || "devsecret-devsecret-devsecret-0123456789",
   },

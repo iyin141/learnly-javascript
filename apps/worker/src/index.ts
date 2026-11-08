@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import pino from "pino";
 import { VideoTranscoder, TranscodeJobData } from "./transcoder.js";
 import { LessonModel, connectDB } from "../../api/src/db.js";
+import { startNotificationWorkers } from "./notifications.js";
 
 const logger = pino({ level: process.env.LOG_LEVEL || "info" });
 
@@ -76,6 +77,8 @@ async function startWorker() {
     }
   );
 
+  const extra = startNotificationWorkers(connection);
+
   worker.on("completed", (job) => {
     logger.info({ jobId: job.id }, "Job completed successfully");
   });
@@ -90,6 +93,7 @@ async function startWorker() {
   const shutdown = async () => {
     logger.info("Worker shutting down...");
     await worker.close();
+    await Promise.all(extra.map((w) => w.close()));
     await mongoose.disconnect();
     process.exit(0);
   };

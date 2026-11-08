@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, use } from "react";
 import Link from "next/link";
-import { AppShell } from "../../../../../components/AppShell";
+import { authFetch } from "../../../../../store/authFetch";
 import { CourseBuilder } from "../../../../../components/CourseBuilder";
 import { ChevronRight, ArrowLeft, Eye, Save, Globe } from "lucide-react";
 
@@ -21,11 +21,11 @@ export default function InstructorCourseBuilderPage({
 
   const fetchCourseData = async () => {
     try {
-      const res = await fetch(`http://localhost:4000/api/courses/${courseId}`);
+      const res = await authFetch(`/api/courses/${courseId}`);
       if (res.ok) {
         const data = await res.json();
         setCourse(data.course);
-        setSections(data.sections || []);
+        setSections(data.course?.sections || []);
       }
     } catch (err) {
       console.error("Failed to load course", err);
@@ -41,13 +41,9 @@ export default function InstructorCourseBuilderPage({
   const handleTogglePublish = async () => {
     if (!course) return;
     setSavingStatus(true);
-    const newStatus = course.status === "published" ? "draft" : "published";
+    const newStatus = "in_review"; // instructors submit; an admin approves (see /admin/courses)
     try {
-      const res = await fetch(`http://localhost:4000/api/courses/${courseId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
+      const res = await authFetch(`/api/instructor/courses/${courseId}/submit`, { method: "POST" });
       if (res.ok) {
         setCourse((prev: any) => ({ ...prev, status: newStatus }));
       }
@@ -59,7 +55,7 @@ export default function InstructorCourseBuilderPage({
   };
 
   return (
-    <AppShell activeNav="instructor">
+    <>
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 font-caption text-caption text-ink-secondary">
@@ -119,7 +115,7 @@ export default function InstructorCourseBuilderPage({
               }`}
             >
               <Globe className="w-4 h-4" />
-              <span>{course?.status === "published" ? "Unpublish" : "Publish Course"}</span>
+              <span>{course?.status === "published" ? "Published" : course?.status === "in_review" ? "In review" : "Submit for review"}</span>
             </button>
           </div>
         </div>
@@ -131,6 +127,6 @@ export default function InstructorCourseBuilderPage({
           onRefresh={fetchCourseData}
         />
       </div>
-    </AppShell>
+    </>
   );
 }

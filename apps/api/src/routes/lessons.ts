@@ -5,6 +5,7 @@ import { requireAuth } from "../middleware/auth.js";
 import { CourseModel, LessonModel, EnrolmentModel } from "../db.js";
 import { getCdnSigner } from "../services/cdn.js";
 import { logger } from "../logger.js";
+import { evaluateCompletion } from "../services/learning.js";
 
 export const lessonsRouter = Router();
 
@@ -154,6 +155,7 @@ lessonsRouter.post("/:id/progress", requireAuth, async (req: Request, res: Respo
   }
 
   await enrolment.save();
+  if (newlyCompleted) await evaluateCompletion(enrolment.userId, enrolment.courseId);
 
   res.status(200).json({
     success: true,
@@ -161,4 +163,27 @@ lessonsRouter.post("/:id/progress", requireAuth, async (req: Request, res: Respo
     completed: alreadyCompleted || newlyCompleted,
     lastPositionSeconds: enrolment.lastPositionSeconds,
   });
+});
+
+/**
+ * POST /api/lessons/:id/complete
+ * Manual "Mark as complete" (text/file lessons, or video watched elsewhere).
+ */
+lessonsRouter.post("/:id/complete", requireAuth, async (req: Request, res: Response) => {
+  const lesson = await LessonModel.findById(req.params.id);
+  if (!lesson) {
+    return res.status(404).json({ error: { code: "NOT_FOUND", message: "Lesson not found", requestId: req.id } });
+  }
+  const enrolment = await EnrolmentModel.findOne({ userId: req.user?._id, courseId: lesson.courseId });
+  if (!enrolment) {
+    return res.status(403).json({ error: { code: "FORBIDDEN", message: "Enrolment required", requestId: req.id } });
+  }
+  if (!enrolment.completedLessons.some((id) => String(id) === String(lesson._id))) {
+    enrolment.completedLessons.push(lesson._id as any);
+    enrolment.lastLessonId = lesson._id as any;
+    await enrolment.save();
+  }
+  const result = await evaluateCompletion(enrolment.userId, enrolment.courseId);
+  const fresh = await EnrolmentModel.findById(enrolment._id);
+  res.json({ progressPercent: fresh?.progressPercent ?? 0, certificateIssued: result.issued });
 });

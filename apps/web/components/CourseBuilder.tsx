@@ -1,5 +1,6 @@
 "use client";
 
+import { authFetch } from "../store/authFetch";
 import React, { useState } from "react";
 import {
   Plus,
@@ -71,7 +72,7 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
     if (!newSectionTitle.trim()) return;
 
     try {
-      const res = await fetch(`/api/courses/${courseId}/sections`, {
+      const res = await authFetch(`/api/courses/${courseId}/sections`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: newSectionTitle.trim() }),
@@ -90,7 +91,7 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
   const handleDeleteSection = async (sectionId: string) => {
     if (!confirm("Delete this section and all of its lessons?")) return;
     try {
-      const res = await fetch(`/api/courses/${courseId}/sections/${sectionId}`, {
+      const res = await authFetch(`/api/courses/${courseId}/sections/${sectionId}`, {
         method: "DELETE",
       });
       if (res.ok) {
@@ -105,7 +106,7 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
   const handleAddLesson = async (sectionId: string) => {
     if (!newLessonTitle.trim()) return;
     try {
-      const res = await fetch(`/api/courses/${courseId}/sections/${sectionId}/lessons`, {
+      const res = await authFetch(`/api/courses/${courseId}/sections/${sectionId}/lessons`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -133,7 +134,7 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
   const handleDeleteLesson = async (lessonId: string, sectionId: string) => {
     if (!confirm("Delete this lesson?")) return;
     try {
-      const res = await fetch(`/api/courses/${courseId}/lessons/${lessonId}`, {
+      const res = await authFetch(`/api/courses/${courseId}/lessons/${lessonId}`, {
         method: "DELETE",
       });
       if (res.ok) {

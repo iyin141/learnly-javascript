@@ -5,7 +5,7 @@ import Link from "next/navigation";
 import NextLink from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "../store";
-import { useLogoutMutation, useGetMeQuery } from "../store/apiSlice";
+import { useLogoutMutation, useGetMeQuery, useGetMyCoursesQuery } from "../store/apiSlice";
 import { logoutAction } from "../store/authSlice";
 
 interface AppShellProps {
@@ -23,6 +23,7 @@ export function AppShell({ children, activeNav }: AppShellProps) {
 
   // Try fetching current user on mount if authenticated
   useGetMeQuery(undefined, { skip: !isAuthenticated && !user });
+  const { data: myCourses } = useGetMyCoursesQuery(undefined, { skip: !user });
 
   const handleLogout = async () => {
     try {
@@ -32,17 +33,20 @@ export function AppShell({ children, activeNav }: AppShellProps) {
     router.push("/login");
   };
 
+  // Calendar / To-do / Archived / Settings have no pages in the spec's route list, so they are not linked.
   const navItems = [
     { label: "Home", href: "/", icon: "home" },
-    { label: "Calendar", href: "/calendar", icon: "calendar_today" },
-    { label: "To-do", href: "/todo", icon: "task_alt" },
+    { label: "Live", href: "/live", icon: "videocam" },
+    ...(user?.role === "instructor" || user?.role === "admin" ? [{ label: "Teach", href: "/instructor/courses", icon: "school" }] : []),
+    ...(user?.role === "admin" ? [{ label: "Admin", href: "/admin", icon: "admin_panel_settings" }] : []),
   ];
 
-  const secondaryNavItems = [
-    { label: "Certificates", href: "/certificates", icon: "verified" },
-    { label: "Archived", href: "/archived", icon: "archive" },
-    { label: "Settings", href: "/settings", icon: "settings" },
-  ];
+  const secondaryNavItems = [{ label: "Certificates", href: "/certificates", icon: "verified" }];
+
+  // Full-screen routes render without the shell: live room (dark stage) and auth pages.
+  if (/^\/live\/[^/]+/.test(pathname ?? "") || pathname === "/login" || pathname === "/register") {
+    return <>{children}</>;
+  }
 
   return (
     <div className="bg-canvas min-h-screen text-ink flex flex-col">
@@ -103,38 +107,21 @@ export function AppShell({ children, activeNav }: AppShellProps) {
                 </span>
               </div>
               <div className="mt-space-xs flex flex-col gap-space-xs">
-                <NextLink
-                  href="/courses/cs101"
-                  className="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-ink-secondary hover:bg-canvas hover:text-ink transition-colors group"
-                >
-                  <div className="w-8 h-8 rounded-full bg-chip-done-bg text-chip-done-fg flex items-center justify-center font-label-md text-label-md font-bold shrink-0">
-                    P
-                  </div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="font-label-md text-label-md truncate text-ink font-medium">
-                      CS 101: Python
-                    </span>
-                    <span className="font-caption text-caption text-ink-secondary truncate">
-                      Fall 2026
-                    </span>
-                  </div>
-                </NextLink>
-                <NextLink
-                  href="/courses/ux204"
-                  className="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-ink-secondary hover:bg-canvas hover:text-ink transition-colors group"
-                >
-                  <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-label-md text-label-md font-bold shrink-0">
-                    U
-                  </div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="font-label-md text-label-md truncate text-ink font-medium">
-                      UX 204: Interaction
-                    </span>
-                    <span className="font-caption text-caption text-ink-secondary truncate">
-                      Fall 2026
-                    </span>
-                  </div>
-                </NextLink>
+                {(myCourses?.enrolments ?? []).slice(0, 6).map((e) => (
+                  <NextLink
+                    key={e.course.id}
+                    href={`/courses/${e.course.id}`}
+                    className="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-ink-secondary hover:bg-canvas hover:text-ink transition-colors group"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-chip-done-bg text-chip-done-fg flex items-center justify-center font-label-md text-label-md font-bold shrink-0">
+                      {e.course.code?.[0] ?? "C"}
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-label-md text-label-md truncate text-ink font-medium">{e.course.title}</span>
+                      <span className="font-caption text-caption text-ink-secondary truncate">{e.course.term}</span>
+                    </div>
+                  </NextLink>
+                ))}
               </div>
             </div>
           </div>
