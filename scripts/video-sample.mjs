@@ -4,7 +4,7 @@ import { execSync } from "node:child_process";
 import { S3Client, HeadObjectCommand } from "@aws-sdk/client-s3";
 
 const API_URL = process.env.API_URL || "http://localhost:4000";
-const S3_ENDPOINT = process.env.S3_ENDPOINT || "http://127.0.0.1:9000";
+const S3_ENDPOINT = process.env.S3_ENDPOINT || "http://127.0.0.1:9010";
 
 const s3 = new S3Client({
   endpoint: S3_ENDPOINT,
