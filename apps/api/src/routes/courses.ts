@@ -15,7 +15,7 @@ function formatCourse(course: ICourse, instructorName: string, instructorAvatar?
     term: course.term,
     sectionName: course.sectionName,
     description: course.description,
-    instructorId: course.instructorId.toString(),
+    instructorId: String((course.instructorId as any)._id ?? course.instructorId),
     instructorName,
     instructorAvatar,
     status: course.status,
