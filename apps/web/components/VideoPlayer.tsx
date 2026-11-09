@@ -39,7 +39,7 @@ export function VideoPlayer({ lessonId, title, onEnded, onCompleted }: Props) {
     if (!v || !url) return;
     const start = v.currentTime || resumeAt.current;
     if (Hls.isSupported()) {
-      const hls = new Hls({ xhrSetup: (x) => (x.withCredentials = true), startPosition: start });
+      const hls = new Hls({ xhrSetup: (x) => { x.withCredentials = true; }, startPosition: start });
       hlsRef.current = hls;
       hls.loadSource(url);
       hls.attachMedia(v);

@@ -52,10 +52,10 @@ function LoginForm() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-space-sm">
         <div>
-          <label className="block font-label-sm text-label-sm text-ink-secondary mb-1">
+          <label htmlFor="field-1" className="block font-label-sm text-label-sm text-ink-secondary mb-1">
             Email Address
           </label>
-          <input
+          <input id="field-1"
             type="email"
             required
             value={email}
@@ -66,10 +66,10 @@ function LoginForm() {
         </div>
 
         <div>
-          <label className="block font-label-sm text-label-sm text-ink-secondary mb-1">
+          <label htmlFor="field-2" className="block font-label-sm text-label-sm text-ink-secondary mb-1">
             Password
           </label>
-          <input
+          <input id="field-2"
             type="password"
             required
             value={password}

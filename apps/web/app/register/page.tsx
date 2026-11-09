@@ -49,10 +49,10 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-space-sm">
           <div>
-            <label className="block font-label-sm text-label-sm text-ink-secondary mb-1">
+            <label htmlFor="field-1" className="block font-label-sm text-label-sm text-ink-secondary mb-1">
               Full Name
             </label>
-            <input
+            <input id="field-1"
               type="text"
               required
               value={name}
@@ -63,10 +63,10 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block font-label-sm text-label-sm text-ink-secondary mb-1">
+            <label htmlFor="field-2" className="block font-label-sm text-label-sm text-ink-secondary mb-1">
               Email Address
             </label>
-            <input
+            <input id="field-2"
               type="email"
               required
               value={email}
@@ -77,10 +77,10 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block font-label-sm text-label-sm text-ink-secondary mb-1">
+            <label htmlFor="field-3" className="block font-label-sm text-label-sm text-ink-secondary mb-1">
               Password
             </label>
-            <input
+            <input id="field-3"
               type="password"
               required
               minLength={6}
