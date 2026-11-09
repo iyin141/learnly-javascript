@@ -10,7 +10,7 @@ export const config = {
   jwtRefreshTtl: process.env.JWT_REFRESH_TTL || "7d",
   s3: {
     endpoint: process.env.S3_ENDPOINT || "http://127.0.0.1:9010",
-    publicEndpoint: process.env.S3_PUBLIC_ENDPOINT || "http://localhost:9000",
+    publicEndpoint: process.env.S3_PUBLIC_ENDPOINT || "http://localhost:9010",
     region: process.env.S3_REGION || "us-east-1",
     accessKey: process.env.S3_ACCESS_KEY || "learnly",
     secretKey: process.env.S3_SECRET_KEY || "learnly-dev-secret-change-me",
