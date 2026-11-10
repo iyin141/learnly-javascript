@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { AttemptResult, AttemptStart } from "@learnly/shared";
 import { useSaveAnswerMutation, useSubmitAttemptMutation } from "../store/apiSlice";
+import { ConfirmModal } from "./Modal";
 
 const mmss = (ms: number) => {
   const s = Math.max(0, Math.floor(ms / 1000));
@@ -22,6 +23,7 @@ export function QuizRunner({
   const [saveAnswer] = useSaveAnswerMutation();
   const [submit, { isLoading: submitting }] = useSubmitAttemptMutation();
   const [current, setCurrent] = useState(0);
+  const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [answers, setAnswers] = useState<Record<string, unknown>>(attempt.answers ?? {});
   const [flagged, setFlagged] = useState<Set<string>>(new Set(attempt.flagged ?? []));
   const [error, setError] = useState<string | null>(null);
@@ -99,7 +101,7 @@ export function QuizRunner({
               </div>
             </div>
             <button
-              onClick={() => { if (confirm(`Submit now? ${qs.length - nAnswered} unanswered.`)) void finish(); }}
+              onClick={() => setConfirmSubmit(true)}
               disabled={submitting}
               className="min-h-11 px-space-lg rounded-full bg-danger text-white font-label-md text-label-md inline-flex items-center gap-space-xs disabled:opacity-60"
             >
@@ -202,6 +204,16 @@ export function QuizRunner({
           </div>
         </section>
       </div>
+      <ConfirmModal
+        open={confirmSubmit}
+        tone="danger"
+        title="Submit quiz?"
+        message={qs.length - nAnswered > 0 ? `You still have ${qs.length - nAnswered} unanswered question${qs.length - nAnswered === 1 ? "" : "s"}. You cannot change answers after submitting.` : "You cannot change your answers after submitting."}
+        confirmLabel="Submit quiz"
+        busy={submitting}
+        onConfirm={() => { setConfirmSubmit(false); void finish(); }}
+        onCancel={() => setConfirmSubmit(false)}
+      />
     </div>
   );
 }

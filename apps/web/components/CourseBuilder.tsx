@@ -16,6 +16,7 @@ import {
   Upload,
 } from "lucide-react";
 import { UploadProgress } from "./UploadProgress";
+import { ConfirmModal } from "./Modal";
 
 interface LessonData {
   _id: string;
@@ -88,8 +89,19 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
     }
   };
 
-  const handleDeleteSection = async (sectionId: string) => {
-    if (!confirm("Delete this section and all of its lessons?")) return;
+  const [pendingDelete, setPendingDelete] = useState<{ kind: "section" | "lesson"; id: string; sectionId?: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const handleDeleteSection = (sectionId: string) => setPendingDelete({ kind: "section", id: sectionId });
+  const handleDeleteLesson = (lessonId: string, sectionId: string) => setPendingDelete({ kind: "lesson", id: lessonId, sectionId });
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    setDeleting(true);
+    try {
+      if (pendingDelete.kind === "section") await performDeleteSection(pendingDelete.id);
+      else await performDeleteLesson(pendingDelete.id, pendingDelete.sectionId!);
+    } finally { setDeleting(false); setPendingDelete(null); }
+  };
+  const performDeleteSection = async (sectionId: string) => {
     try {
       const res = await authFetch(`/api/courses/${courseId}/sections/${sectionId}`, {
         method: "DELETE",
@@ -131,8 +143,7 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
     }
   };
 
-  const handleDeleteLesson = async (lessonId: string, sectionId: string) => {
-    if (!confirm("Delete this lesson?")) return;
+  const performDeleteLesson = async (lessonId: string, sectionId: string) => {
     try {
       const res = await authFetch(`/api/courses/${courseId}/lessons/${lessonId}`, {
         method: "DELETE",
@@ -370,6 +381,16 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
           Add Section
         </button>
       </form>
+      <ConfirmModal
+        open={pendingDelete !== null}
+        tone="danger"
+        title={pendingDelete?.kind === "section" ? "Delete section?" : "Delete lesson?"}
+        message={pendingDelete?.kind === "section" ? "This deletes the section and all of its lessons. This cannot be undone." : "This lesson will be removed from the course. This cannot be undone."}
+        confirmLabel="Delete"
+        busy={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 };
