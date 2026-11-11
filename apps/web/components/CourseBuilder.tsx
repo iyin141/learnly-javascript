@@ -45,12 +45,16 @@ interface CourseBuilderProps {
   onRefresh?: () => void;
 }
 
+// The course endpoint returns `id`; the builder endpoints return Mongo documents with `_id`. Accept both.
+const withIds = (secs: SectionData[]): SectionData[] =>
+  secs.map((s: any) => ({ ...s, _id: s._id ?? s.id, lessons: (s.lessons ?? []).map((l: any) => ({ ...l, _id: l._id ?? l.id })) }));
+
 export const CourseBuilder: React.FC<CourseBuilderProps> = ({
   courseId,
   initialSections = [],
   onRefresh,
 }) => {
-  const [sections, setSections] = useState<SectionData[]>(initialSections);
+  const [sections, setSections] = useState<SectionData[]>(() => withIds(initialSections));
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [addingToSectionId, setAddingToSectionId] = useState<string | null>(null);
   const [newLessonTitle, setNewLessonTitle] = useState("");
@@ -64,7 +68,7 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
   // Sync when initialSections changes
   React.useEffect(() => {
     if (initialSections.length > 0) {
-      setSections(initialSections);
+      setSections(withIds(initialSections));
     }
   }, [initialSections]);
 
@@ -80,7 +84,7 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
       });
       if (res.ok) {
         const data = await res.json();
-        setSections((prev) => [...prev, { ...data.section, lessons: [] }]);
+        setSections((prev) => [...prev, ...withIds([{ ...data.section, lessons: [] }])]);
         setNewSectionTitle("");
         if (onRefresh) onRefresh();
       }
@@ -131,7 +135,7 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
         const { lesson } = await res.json();
         setSections((prev) =>
           prev.map((s) =>
-            s._id === sectionId ? { ...s, lessons: [...(s.lessons || []), lesson] } : s
+            s._id === sectionId ? { ...s, lessons: [...(s.lessons || []), { ...lesson, _id: lesson._id ?? lesson.id }] } : s
           )
         );
         setNewLessonTitle("");
