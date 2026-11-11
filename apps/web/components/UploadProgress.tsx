@@ -1,7 +1,7 @@
 "use client";
 
 import { authFetch } from "../store/authFetch";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { UploadCloud, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 
 interface UploadProgressProps {
@@ -24,7 +24,15 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
   const [statusText, setStatusText] = useState("Preparing upload...");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Upload each file exactly once. The effect used to depend on onSuccess (a new function every render), so every
+  // parent render, including the refresh that onSuccess itself triggers, started the upload again.
+  const startedFor = useRef<File | null>(null);
+  const onSuccessRef = useRef(onSuccess);
+  onSuccessRef.current = onSuccess;
+
   useEffect(() => {
+    if (startedFor.current === file) return;
+    startedFor.current = file;
     let isCancelled = false;
 
     async function doUpload() {
@@ -116,7 +124,7 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
 
         setStatus("ready");
         setStatusText("Video uploaded! Transcoding running in worker...");
-        if (onSuccess) onSuccess();
+        onSuccessRef.current?.();
       } catch (err: any) {
         if (!isCancelled) {
           setStatus("error");
@@ -130,7 +138,7 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
     return () => {
       isCancelled = true;
     };
-  }, [courseId, lessonId, file, onSuccess]);
+  }, [courseId, lessonId, file]);
 
   return (
     <div className="bg-canvas border border-border rounded-xl p-4 my-3">
