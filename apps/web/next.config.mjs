@@ -1,8 +1,11 @@
 /** @type {import('next').NextConfig} */
 const apiBase = process.env.API_INTERNAL_URL || "http://127.0.0.1:4000";
 
+const basePath = process.env.NEXT_BASE_PATH || "";
+
 const nextConfig = {
   reactStrictMode: true,
+  ...(basePath ? { basePath } : {}),
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "lh3.googleusercontent.com" },

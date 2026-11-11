@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery, BaseQueryFn, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "./index";
+import { BASE } from "./basePath";
 import { setCredentials, logoutAction } from "./authSlice";
 import type {
   User,
@@ -17,7 +18,7 @@ import type {
 } from "@learnly/shared";
 
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: "/api",
+  baseUrl: `${BASE}/api`,
   credentials: "include",
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootState).auth.accessToken;

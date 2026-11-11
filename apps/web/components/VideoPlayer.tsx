@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
 import { useGetPlaybackQuery, useSaveProgressMutation } from "../store/apiSlice";
+import { withBase } from "../store/basePath";
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
@@ -29,7 +30,7 @@ export function VideoPlayer({ lessonId, title, onEnded, onCompleted }: Props) {
   const [level, setLevel] = useState(-1);
   const [menu, setMenu] = useState(false);
   const [captions, setCaptions] = useState(false);
-  const url = data?.playbackUrl;
+  const url = data?.playbackUrl ? withBase(data.playbackUrl) : undefined;           // the API returns a root-relative /cdn/... URL
   const resumeAt = useRef(0);
   if (data && !resumeAt.current) resumeAt.current = data.lastPositionSeconds > 5 ? data.lastPositionSeconds : 0;
 

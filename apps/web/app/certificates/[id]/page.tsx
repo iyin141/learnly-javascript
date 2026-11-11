@@ -16,7 +16,7 @@ export default function CertificatePage() {
   if (isLoading) return <div className="p-margin"><div className="h-96 rounded-xl bg-border animate-pulse" /></div>;
   if (isError || !cert) return <div className="p-margin"><p role="alert">Certificate not found.</p></div>;
 
-  const verifyUrl = `${window.location.origin}/verify/${cert.code}`;
+  const verifyUrl = `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH || ""}/verify/${cert.code}`;
   const onDownload = async () => {
     const r = await download(id);
     if (r.data?.url) window.open(r.data.url, "_blank", "noopener");

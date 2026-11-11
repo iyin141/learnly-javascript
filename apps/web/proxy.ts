@@ -10,7 +10,9 @@ export function proxy(req: NextRequest) {
   const isProtected = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
   if (isProtected && !refreshToken) {
-    const url = new URL("/login", req.url);
+    const url = req.nextUrl.clone();          // keeps the base path
+    url.pathname = "/login";
+    url.search = "";
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
   }
