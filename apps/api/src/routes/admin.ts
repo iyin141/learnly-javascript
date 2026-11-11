@@ -68,6 +68,30 @@ adminRouter.get("/instructor/courses", requireAuth, requireRole("instructor", "a
   res.json({ courses: out });
 });
 
+/** Create a draft course owned by the calling instructor; content is added in the builder. */
+adminRouter.post("/instructor/courses", requireAuth, requireRole("instructor", "admin"), async (req: Request, res: Response) => {
+  const b = z
+    .object({
+      title: z.string().trim().min(3, "Title must be at least 3 characters"),
+      code: z.string().trim().min(2).max(20),
+      term: z.string().trim().optional(),
+      description: z.string().trim().optional(),
+      subjectColor: z.enum(["blue", "coral", "slate", "purple", "teal", "amber"]).optional(),
+    })
+    .parse(req.body);
+  const c = await CourseModel.create({
+    title: b.title,
+    code: b.code.toUpperCase(),
+    term: b.term || "Self-paced",
+    sectionName: "Section 01",
+    description: b.description || "No description yet.",
+    instructorId: req.user!._id,
+    status: "draft",
+    subjectColor: b.subjectColor ?? "blue",
+  });
+  res.status(201).json({ course: { id: String(c._id), title: c.title, code: c.code, status: c.status } });
+});
+
 adminRouter.post("/instructor/courses/:id/submit", requireAuth, requireRole("instructor", "admin"), async (req: Request, res: Response) => {
   const c = await CourseModel.findById(oid(req.params.id));
   if (!c) throw new AppError(404, "NOT_FOUND", "Course not found");
