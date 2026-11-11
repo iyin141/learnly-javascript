@@ -1,13 +1,14 @@
 "use client";
 
 import { Img } from "@/components/Img";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/navigation";
 import NextLink from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "../store";
 import { useLogoutMutation, useGetMeQuery, useGetMyCoursesQuery } from "../store/apiSlice";
 import { logoutAction } from "../store/authSlice";
+import { rolesFor, type Role } from "../store/routeAccess";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -25,6 +26,12 @@ export function AppShell({ children, activeNav }: AppShellProps) {
   // Try fetching current user on mount if authenticated
   useGetMeQuery(undefined, { skip: !isAuthenticated && !user });
   const { data: myCourses } = useGetMyCoursesQuery(undefined, { skip: !user });
+
+  // Second layer behind proxy.ts: once the user is known, leave pages this role may not open.
+  useEffect(() => {
+    const allowed = rolesFor(pathname);
+    if (user && allowed && !allowed.includes(user.role as Role)) router.replace("/");
+  }, [user, pathname, router]);
 
   const handleLogout = async () => {
     try {
