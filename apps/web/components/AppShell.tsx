@@ -8,7 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "../store";
 import { useLogoutMutation, useGetMeQuery, useGetMyCoursesQuery } from "../store/apiSlice";
 import { logoutAction } from "../store/authSlice";
-import { rolesFor, type Role } from "../store/routeAccess";
+import { isAuthPage, rolesFor, type Role } from "../store/routeAccess";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -31,6 +31,7 @@ export function AppShell({ children, activeNav }: AppShellProps) {
   useEffect(() => {
     const allowed = rolesFor(pathname);
     if (user && allowed && !allowed.includes(user.role as Role)) router.replace("/");
+    if (user && isAuthPage(pathname)) router.replace(new URLSearchParams(window.location.search).get("next") || "/");
   }, [user, pathname, router]);
 
   const handleLogout = async () => {
