@@ -19,7 +19,7 @@ function formatUser(user: IUser): User {
   };
 }
 
-function setRefreshTokenCookie(res: Response, token: string): void {
+function setRefreshTokenCookie(res: Response, token: string, role: string): void {
   res.cookie("refreshToken", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -27,8 +27,9 @@ function setRefreshTokenCookie(res: Response, token: string): void {
     path: "/api/auth",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
-  // Site-wide "signed in" marker (no secret) so the web app's route guard sees the session on page requests.
-  res.cookie("session", "1", {
+  // Site-wide "signed in" marker carrying the role (no secret) so the web app's route guard can pick pages per role.
+  // The API still checks the role on every request.
+  res.cookie("session", role, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -62,7 +63,7 @@ authRouter.post("/register", authRateLimiter, async (req: Request, res: Response
 
   const accessToken = generateAccessToken(user);
   const refreshToken = await createRefreshToken(user);
-  setRefreshTokenCookie(res, refreshToken);
+  setRefreshTokenCookie(res, refreshToken, user.role);
 
   res.status(201).json({
     user: formatUser(user),
@@ -85,7 +86,7 @@ authRouter.post("/login", authRateLimiter, async (req: Request, res: Response) =
 
   const accessToken = generateAccessToken(user);
   const refreshToken = await createRefreshToken(user);
-  setRefreshTokenCookie(res, refreshToken);
+  setRefreshTokenCookie(res, refreshToken, user.role);
 
   res.json({
     user: formatUser(user),
@@ -121,7 +122,7 @@ authRouter.post("/refresh", async (req: Request, res: Response) => {
 
   const newRefreshToken = await createRefreshToken(user);
   const newAccessToken = generateAccessToken(user);
-  setRefreshTokenCookie(res, newRefreshToken);
+  setRefreshTokenCookie(res, newRefreshToken, user.role);
 
   res.json({
     user: formatUser(user),
