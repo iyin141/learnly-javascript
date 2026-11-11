@@ -165,13 +165,13 @@ export function AppShell({ children, activeNav }: AppShellProps) {
 
           {/* Right Header Actions */}
           <div className="flex items-center gap-space-sm md:gap-space-md">
-            <button
+            <NextLink
+              href={user?.role === "instructor" || user?.role === "admin" ? "/instructor/courses?new=1" : user ? "/live" : "/login"}
               className="hidden sm:inline-flex items-center gap-space-xs px-space-md py-space-xs bg-primary text-white rounded-full font-label-md text-label-md hover:bg-primary-hover transition-colors shadow-sm"
-              type="button"
             >
               <span className="material-symbols-outlined text-[18px]">add</span>
               <span>Create or Join</span>
-            </button>
+            </NextLink>
 
             <button
               className="p-space-xs text-ink-secondary hover:text-ink hover:bg-canvas rounded-full transition-colors relative"

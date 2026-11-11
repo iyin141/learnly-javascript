@@ -1,3 +1,4 @@
+import { refreshSession } from "./refresh";
 import { createApi, fetchBaseQuery, BaseQueryFn, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "./index";
 import { BASE } from "./basePath";
@@ -38,14 +39,9 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 
   if (result.error && result.error.status === 401) {
     // Try refreshing the token using the HttpOnly cookie
-    const refreshResult = await rawBaseQuery(
-      { url: "/auth/refresh", method: "POST" },
-      api,
-      extraOptions
-    );
+    const data = await refreshSession();
 
-    if (refreshResult.data) {
-      const data = refreshResult.data as AuthResponse;
+    if (data) {
       api.dispatch(setCredentials({ user: data.user, accessToken: data.accessToken }));
       // Retry original query
       result = await rawBaseQuery(args, api, extraOptions);
@@ -206,6 +202,10 @@ export const apiSlice = createApi({
       query: () => "/instructor/courses",
       providesTags: ["Instructor"],
     }),
+    createCourse: builder.mutation<{ course: { id: string; title: string; code: string; status: string } }, { title: string; code: string; term?: string; description?: string; subjectColor?: string }>({
+      query: (body) => ({ url: "/instructor/courses", method: "POST", body }),
+      invalidatesTags: ["Instructor"],
+    }),
     submitForReview: builder.mutation<{ status: string }, string>({
       query: (id) => ({ url: `/instructor/courses/${id}/submit`, method: "POST" }),
       invalidatesTags: ["Instructor"],
@@ -286,6 +286,7 @@ export const apiSlice = createApi({
 });
 
 export const {
+  useCreateCourseMutation,
   useGetPlaybackQuery,
   useSaveProgressMutation,
   useMarkCompleteMutation,
