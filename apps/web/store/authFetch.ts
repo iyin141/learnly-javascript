@@ -1,6 +1,7 @@
 import { store } from "./index";
 import { setCredentials, logoutAction } from "./authSlice";
 import { withBase } from "./basePath";
+import { refreshSession } from "./refresh";
 
 /** fetch for /api calls outside RTK Query: adds the bearer token and retries once after a refresh. */
 export async function authFetch(input: string, init: RequestInit = {}): Promise<Response> {
@@ -12,9 +13,8 @@ export async function authFetch(input: string, init: RequestInit = {}): Promise<
   };
   let res = await run();
   if (res.status === 401) {
-    const r = await fetch(withBase("/api/auth/refresh"), { method: "POST", credentials: "include" });
-    if (r.ok) {
-      const d = await r.json();
+    const d = await refreshSession();
+    if (d) {
       store.dispatch(setCredentials({ user: d.user, accessToken: d.accessToken }));
       res = await run();
     } else store.dispatch(logoutAction());
