@@ -1,5 +1,6 @@
 "use client";
 
+import { Img } from "@/components/Img";
 import React, { useState } from "react";
 import Link from "next/navigation";
 import NextLink from "next/link";
@@ -65,7 +66,7 @@ export function AppShell({ children, activeNav }: AppShellProps) {
             </button>
             <NextLink href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-lg">
-                L
+                <Img name="logo" alt="" className="w-full h-full object-cover rounded-[inherit]" fallback={<>L</>} />
               </div>
               <span className="font-headline-md text-headline-md text-primary tracking-tight font-bold">
                 Learnly

@@ -1,5 +1,7 @@
 "use client";
 
+import { Img } from "@/components/Img";
+import PasswordInput from "@/components/PasswordInput";
 import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -36,7 +38,7 @@ function LoginForm() {
     <div className="w-full max-w-md bg-card rounded-card border border-border shadow-card p-space-lg flex flex-col gap-space-md">
       <div className="text-center">
         <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center mx-auto text-xl font-bold mb-2">
-          L
+          <Img name="logo" alt="" className="w-full h-full object-cover rounded-[inherit]" fallback={<>L</>} />
         </div>
         <h1 className="font-headline-md text-headline-md font-bold text-ink">Welcome back to Learnly</h1>
         <p className="font-body-md text-body-md text-ink-secondary mt-1">
@@ -69,8 +71,7 @@ function LoginForm() {
           <label htmlFor="field-2" className="block font-label-sm text-label-sm text-ink-secondary mb-1">
             Password
           </label>
-          <input id="field-2"
-            type="password"
+          <PasswordInput id="field-2"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}

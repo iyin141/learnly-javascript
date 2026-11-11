@@ -1,5 +1,7 @@
 "use client";
 
+import PasswordInput from "@/components/PasswordInput";
+import { Img } from "@/components/Img";
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -33,7 +35,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md bg-card rounded-card border border-border shadow-card p-space-lg flex flex-col gap-space-md">
         <div className="text-center">
           <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center mx-auto text-xl font-bold mb-2">
-            L
+            <Img name="logo" alt="" className="w-full h-full object-cover rounded-[inherit]" fallback={<>L</>} />
           </div>
           <h1 className="font-headline-md text-headline-md font-bold text-ink">Join Learnly</h1>
           <p className="font-body-md text-body-md text-ink-secondary mt-1">
@@ -80,8 +82,7 @@ export default function RegisterPage() {
             <label htmlFor="field-3" className="block font-label-sm text-label-sm text-ink-secondary mb-1">
               Password
             </label>
-            <input id="field-3"
-              type="password"
+            <PasswordInput id="field-3"
               required
               minLength={6}
               value={password}
