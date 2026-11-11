@@ -250,9 +250,14 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
                                 <Loader2 className="w-3 h-3 animate-spin" /> Transcoding...
                               </span>
                             )}
-                            {lesson.video?.status === "uploaded" && (
+                            {lesson.video?.status === "uploaded" && (lesson.video as { rawUploadKey?: string }).rawUploadKey && (
                               <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
                                 Uploaded (queued)
+                              </span>
+                            )}
+                            {(!lesson.video || (lesson.video.status === "uploaded" && !(lesson.video as { rawUploadKey?: string }).rawUploadKey)) && (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-ink-secondary bg-canvas px-2 py-0.5 rounded-full border border-border">
+                                No video yet
                               </span>
                             )}
                             {lesson.video?.status === "failed" && (
