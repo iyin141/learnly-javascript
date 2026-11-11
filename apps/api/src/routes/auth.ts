@@ -27,6 +27,19 @@ function setRefreshTokenCookie(res: Response, token: string): void {
     path: "/api/auth",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
+  // Site-wide "signed in" marker (no secret) so the web app's route guard sees the session on page requests.
+  res.cookie("session", "1", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+}
+
+function clearAuthCookies(res: Response): void {
+  res.clearCookie("refreshToken", { path: "/api/auth" });
+  res.clearCookie("session", { path: "/" });
 }
 
 authRouter.post("/register", authRateLimiter, async (req: Request, res: Response) => {
@@ -92,13 +105,13 @@ authRouter.post("/refresh", async (req: Request, res: Response) => {
       // Possible reuse attack: revoke all tokens for this user
       await RefreshTokenModel.updateMany({ userId: storedToken.userId }, { revoked: true });
     }
-    res.clearCookie("refreshToken", { path: "/api/auth" });
+    clearAuthCookies(res);
     throw new AppError(401, "INVALID_REFRESH_TOKEN", "Refresh token is invalid or expired");
   }
 
   const user = await UserModel.findById(storedToken.userId);
   if (!user) {
-    res.clearCookie("refreshToken", { path: "/api/auth" });
+    clearAuthCookies(res);
     throw new AppError(401, "USER_NOT_FOUND", "User associated with token no longer exists");
   }
 
@@ -121,7 +134,7 @@ authRouter.post("/logout", async (req: Request, res: Response) => {
   if (token) {
     await RefreshTokenModel.updateOne({ token }, { revoked: true });
   }
-  res.clearCookie("refreshToken", { path: "/api/auth" });
+  clearAuthCookies(res);
   res.json({ message: "Logged out successfully" });
 });
 
