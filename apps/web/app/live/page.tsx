@@ -41,9 +41,9 @@ export default function LiveLobbyPage() {
             <p className="text-ink-secondary">Real-time classes, labs and office hours.</p>
           </div>
         </div>
-        <form onSubmit={join} className="flex gap-space-sm items-start">
-          <div>
-            <input value={code} onChange={(e) => setCode(e.target.value)} aria-label="Room code or link" placeholder="Enter room code or link..." className="min-h-11 w-64 max-w-full rounded-full bg-canvas border border-border px-4 focus:outline-none focus:ring-2 focus:ring-primary-ring" />
+        <form onSubmit={join} className="flex flex-wrap gap-space-sm items-start w-full sm:w-auto">
+          <div className="flex-1 min-w-0 sm:flex-none">
+            <input value={code} onChange={(e) => setCode(e.target.value)} aria-label="Room code or link" placeholder="Enter room code or link..." className="min-h-11 w-full sm:w-64 rounded-full bg-canvas border border-border px-4 focus:outline-none focus:ring-2 focus:ring-primary-ring" />
             {err && <p role="alert" className="text-danger text-sm mt-1">{err}</p>}
           </div>
           <button disabled={joining || code.length < 3} className="min-h-11 px-space-lg rounded-full bg-primary text-white font-label-md disabled:opacity-50">Join</button>

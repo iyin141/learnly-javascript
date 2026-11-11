@@ -22,7 +22,7 @@ export function CourseCard({
   course,
   progressPercent = 0,
   completedLessons = 0,
-  nextUpTitle = "Module 1: Getting Started",
+  nextUpTitle = "Open course",
 }: CourseCardProps) {
   const color = colorClassMap[course.subjectColor] || colorClassMap.blue;
 
@@ -101,7 +101,7 @@ export function CourseCard({
             <span className="flex items-center gap-1">
               <span className="material-symbols-outlined text-[16px] text-primary">auto_stories</span>
               <span>
-                {completedLessons} / {course.totalLessons || 12} lessons
+                {completedLessons} / {course.totalLessons} lessons
               </span>
             </span>
             {progressPercent >= 50 ? (
