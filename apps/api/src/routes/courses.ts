@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { CourseModel, SectionModel, LessonModel, EnrolmentModel, UserModel, type ICourse } from "../db.js";
 import { authenticate, optionalAuth } from "../middleware/auth.js";
 import { AppError } from "../middleware/error-handler.js";
+import { QuizModel } from "../db-learning.js";
 import type { Course, Enrolment } from "@learnly/shared";
 
 export const coursesRouter = Router();
@@ -39,7 +40,7 @@ coursesRouter.get("/", optionalAuth, async (_req: Request, res: Response) => {
       const totalLessons = await LessonModel.countDocuments({ courseId: c._id });
       const item = formatCourse(c, instructor?.name || "Instructor", instructor?.avatarUrl);
       item.totalLessons = totalLessons;
-      item.totalQuizzes = Math.max(1, Math.floor(totalLessons / 6)); // approximate quiz count
+      item.totalQuizzes = await QuizModel.countDocuments({ courseId: c._id });
       return item;
     })
   );
@@ -104,7 +105,7 @@ coursesRouter.get("/:id", optionalAuth, async (req: Request, res: Response) => {
   const totalLessons = lessons.length;
   const courseData = formatCourse(course, instructor?.name || "Instructor", instructor?.avatarUrl);
   courseData.totalLessons = totalLessons;
-  courseData.totalQuizzes = Math.max(1, Math.floor(totalLessons / 6));
+  courseData.totalQuizzes = await QuizModel.countDocuments({ courseId: course._id });
   courseData.sections = sectionsWithLessons;
 
   res.json({
