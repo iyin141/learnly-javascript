@@ -62,6 +62,9 @@ export class StripeProvider implements PaymentProvider {
  * Hosted checkout via /transaction/initialize; webhook header x-paystack-signature = HMAC-SHA512 of the raw body with the secret key.
  * The payment id is used as the Paystack reference, so the webhook maps straight back to our payment row.
  */
+/** Paystack validates the TLD, so seed/demo addresses on reserved domains (.test, .local, .invalid, .localhost, .example) are sent as example.com. Real emails are untouched. */
+export const payableEmail = (email: string) => (/\.(test|local|invalid|localhost|example)$/i.test(email) ? `${email.split("@")[0]}@example.com` : email);
+
 export class PaystackProvider implements PaymentProvider {
   readonly name = "paystack";
   constructor(private secret: string, private currency = "NGN", private base = "https://api.paystack.co") {
@@ -72,7 +75,7 @@ export class PaystackProvider implements PaymentProvider {
     const r = await fetch(`${this.base}/transaction/initialize`, {
       method: "POST",
       headers: { Authorization: `Bearer ${this.secret}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ email: i.email, amount: i.amountCents, currency: this.currency, reference: i.paymentId, callback_url: i.returnUrl, metadata: { paymentId: i.paymentId } }),
+      body: JSON.stringify({ email: payableEmail(i.email), amount: i.amountCents, currency: this.currency, reference: i.paymentId, callback_url: i.returnUrl, metadata: { paymentId: i.paymentId } }),
     });
     const j = (await r.json()) as { status?: boolean; message?: string; data?: { authorization_url?: string; reference?: string } };
     if (!r.ok || !j.status) throw new Error(`paystack initialize ${r.status}: ${j.message ?? ""}`);
