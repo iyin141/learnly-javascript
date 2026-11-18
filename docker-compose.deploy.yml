@@ -1,0 +1,53 @@
+# VM deploy overlay for the Learnly JavaScript stack.
+# Use: docker compose -f docker-compose.yml -f docker-compose.deploy.yml --env-file .env.deploy up -d --build
+# - the database is Neon (DATABASE_URL / DIRECT_URL in .env.deploy); the local postgres service is not started
+# - no host port for redis, the MinIO console or the SMTP port; web, api, cdn, MinIO S3 and the mailpit UI listen on 127.0.0.1 only
+#   and the host nginx publishes them under /learnly-js (MinIO buckets are routed at the domain root, so their names are unique: learnlyjs-*)
+# - the stack's own gateway (service "nginx") is not started: the host nginx does that routing
+# - LiveKit: the stack's own livekit is not started (its media ports are taken by the Go stack); api and worker use the LiveKit of the Go stack
+#   through the public /learnly/rtc route, with that stack's API key (LEARNLY_LIVEKIT_URL, LEARNLY_LIVEKIT_PUBLIC_URL, LIVEKIT_API_KEY/SECRET in .env.deploy)
+# - the web app is built for the base path /learnly-js
+name: learnly-js
+services:
+  postgres:
+    profiles: ["disabled"]
+  livekit:
+    profiles: ["disabled"]
+  nginx:
+    profiles: ["disabled"]
+    ports: !reset []
+  redis:
+    ports: !reset []
+  minio:
+    ports: !override
+      - "127.0.0.1:${LEARNLY_S3_PORT:-7306}:9000"
+  mailpit:
+    ports: !override
+      - "127.0.0.1:${LEARNLY_MAIL_PORT:-7304}:8025"
+  cdn:
+    ports:
+      - "127.0.0.1:${LEARNLY_CDN_PORT:-7303}:80"
+  api:
+    depends_on: !override
+      redis: { condition: service_healthy }
+      minio-init: { condition: service_completed_successfully }
+    environment:
+      LIVEKIT_URL: ${LEARNLY_LIVEKIT_URL}
+      LIVEKIT_PUBLIC_URL: ${LEARNLY_LIVEKIT_PUBLIC_URL}
+    ports:
+      - "127.0.0.1:${LEARNLY_API_PORT:-7302}:4000"
+  worker:
+    environment:
+      LIVEKIT_URL: ${LEARNLY_LIVEKIT_URL}
+      LIVEKIT_PUBLIC_URL: ${LEARNLY_LIVEKIT_PUBLIC_URL}
+  web:
+    environment:
+      API_INTERNAL_URL: http://api:4000
+      NEXT_BASE_PATH: ${LEARNLY_BASE_PATH:-/learnly-js}
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_BASE_PATH: ${LEARNLY_BASE_PATH:-/learnly-js}
+    ports:
+      - "127.0.0.1:${LEARNLY_WEB_PORT:-7301}:3000"
