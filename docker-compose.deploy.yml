@@ -5,7 +5,8 @@
 #   and the host nginx publishes them under /learnly-js (MinIO buckets are routed at the domain root, so their names are unique: learnlyjs-*)
 # - the stack's own gateway (service "nginx") is not started: the host nginx does that routing
 # - LiveKit: the stack's own livekit is not started (its media ports are taken by the Go stack); api and worker use the LiveKit of the Go stack
-#   through the public /learnly/rtc route, with that stack's API key (LEARNLY_LIVEKIT_URL, LEARNLY_LIVEKIT_PUBLIC_URL, LIVEKIT_API_KEY/SECRET in .env.deploy)
+#   through the domain: server API calls go to LEARNLY_LIVEKIT_URL (the bare domain; the host nginx routes /twirp/ to LiveKit, because the SDK drops any
+#   path prefix), browsers connect through LEARNLY_LIVEKIT_PUBLIC_URL (/learnly/rtc); LIVEKIT_API_KEY/SECRET in .env.deploy are that stack's
 # - the web app is built for the base path /learnly-js
 name: learnly-js
 services:
