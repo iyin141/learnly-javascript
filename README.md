@@ -27,6 +27,7 @@ The data layer is Prisma over PostgreSQL (`packages/db`, migrations in `packages
 # instructor creates a priced course (priceCents) in the New course form, or seed: DATA 301 costs $49.00
 # student: POST /api/courses/<id>/checkout   -> mock: enrolled immediately; stripe: { checkoutUrl }
 PAYMENT_PROVIDER=stripe STRIPE_SECRET_KEY=sk_test_... STRIPE_WEBHOOK_SECRET=whsec_...   # Stripe test mode; live keys are refused
+PAYMENT_PROVIDER=paystack PAYSTACK_SECRET_KEY=sk_test_... PAYMENT_CURRENCY=NGN            # Paystack test mode, where Stripe is unavailable
 ```
 
 ## Run

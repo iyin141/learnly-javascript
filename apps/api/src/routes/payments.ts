@@ -70,7 +70,7 @@ paymentsRouter.post("/courses/:id/checkout", authenticate, async (req: Request, 
 // POST /api/payments/webhook - gateway callback (signature over the raw body, idempotent per event id)
 paymentsRouter.post("/payments/webhook", async (req: Request, res: Response) => {
   const raw: Buffer = (req as any).rawBody ?? Buffer.alloc(0);
-  const ev = getPaymentProvider().parseWebhook(raw, req.header("stripe-signature") ?? undefined);
+  const ev = getPaymentProvider().parseWebhook(raw, req.header("x-paystack-signature") ?? req.header("stripe-signature") ?? undefined);
   if (!ev) throw new AppError(401, "INVALID_SIGNATURE", "Invalid webhook signature");
   if (await prisma.payment.findUnique({ where: { eventId: ev.eventId }, select: { id: true } })) {
     res.json({ status: "duplicate" });

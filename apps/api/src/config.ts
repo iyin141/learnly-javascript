@@ -34,7 +34,8 @@ export const config = {
   },
   webOrigin: process.env.WEB_ORIGIN || "http://localhost:3000",
   payments: {
-    provider: (process.env.PAYMENT_PROVIDER || "mock") as "mock" | "stripe",
+    provider: (process.env.PAYMENT_PROVIDER || "mock") as "mock" | "stripe" | "paystack",
+    paystackSecret: process.env.PAYSTACK_SECRET_KEY || "",
     stripeSecret: process.env.STRIPE_SECRET_KEY || "",
     stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || "",
     currency: process.env.PAYMENT_CURRENCY || "usd",

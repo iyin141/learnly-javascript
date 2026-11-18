@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import crypto from "node:crypto";
-import { StripeProvider, MockProvider, platformFee } from "../src/services/payments.js";
+import { StripeProvider, PaystackProvider, MockProvider, platformFee } from "../src/services/payments.js";
 import { CloudFrontSigner } from "../src/services/cdn.js";
 import { config } from "../src/config.js";
 
@@ -45,5 +45,22 @@ describe("CloudFront signer", () => {
     const ok = crypto.createVerify("RSA-SHA1").update(policy).verify(publicKey, unb64(u.searchParams.get("Signature")!));
     expect(ok).toBe(true);
     expect(s.cookies?.map((c) => c.name)).toEqual(["CloudFront-Policy", "CloudFront-Signature", "CloudFront-Key-Pair-Id"]);
+  });
+});
+
+describe("paystack webhook (test mode)", () => {
+  const p = new PaystackProvider("sk_test_abc");
+  const body = Buffer.from(JSON.stringify({ event: "charge.success", data: { id: 77, reference: "pay-9", amount: 4900, status: "success" } }));
+  const sig = (b: Buffer, k = "sk_test_abc") => crypto.createHmac("sha512", k).update(b).digest("hex");
+  it("accepts a valid signature and maps the reference to the payment id", () => {
+    expect(p.parseWebhook(body, sig(body))).toEqual({ eventId: "77", paymentId: "pay-9", amountCents: 4900 });
+  });
+  it("rejects wrong key, tampered body, missing signature, non-success events and live keys", () => {
+    expect(p.parseWebhook(body, sig(body, "other"))).toBeNull();
+    expect(p.parseWebhook(Buffer.from(body.toString().replace("4900", "1")), sig(body))).toBeNull();
+    expect(p.parseWebhook(body, undefined)).toBeNull();
+    const failed = Buffer.from(JSON.stringify({ event: "charge.failed", data: { id: 1, reference: "x", amount: 1, status: "failed" } }));
+    expect(p.parseWebhook(failed, sig(failed))).toBeNull();
+    expect(() => new PaystackProvider("sk_live_x")).toThrow(/test keys/);
   });
 });

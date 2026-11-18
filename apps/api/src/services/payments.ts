@@ -55,11 +55,45 @@ export class StripeProvider implements PaymentProvider {
   }
 }
 
+/**
+ * Paystack (test keys sk_test_...). Works where Stripe is unavailable (Nigeria, Ghana, South Africa, Kenya).
+ * Hosted checkout via /transaction/initialize; webhook header x-paystack-signature = HMAC-SHA512 of the raw body with the secret key.
+ * The payment id is used as the Paystack reference, so the webhook maps straight back to our payment row.
+ */
+export class PaystackProvider implements PaymentProvider {
+  readonly name = "paystack";
+  constructor(private secret: string, private currency = "NGN", private base = "https://api.paystack.co") {
+    if (!secret.startsWith("sk_test_") && process.env.PAYSTACK_ALLOW_LIVE !== "1") throw new Error("PaystackProvider only accepts test keys (sk_test_...)");
+  }
+  async createSession(i: CheckoutInput) {
+    const r = await fetch(`${this.base}/transaction/initialize`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${this.secret}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ email: i.email, amount: String(i.amountCents), currency: this.currency, reference: i.paymentId, callback_url: i.returnUrl }),
+    });
+    const j = (await r.json()) as { status?: boolean; message?: string; data?: { authorization_url?: string; reference?: string } };
+    if (!r.ok || !j.status) throw new Error(`paystack initialize ${r.status}: ${j.message ?? ""}`);
+    return { url: j.data?.authorization_url, ref: j.data?.reference };
+  }
+  parseWebhook(raw: Buffer, signature: string | undefined): PaidEvent | null {
+    if (!signature) return null;
+    const want = crypto.createHmac("sha512", this.secret).update(raw).digest("hex");
+    const a = Buffer.from(want), b = Buffer.from(signature);
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+    const j = JSON.parse(raw.toString("utf8"));
+    if (j.event !== "charge.success" || j.data?.status !== "success") return null;
+    return { eventId: String(j.data.id), paymentId: String(j.data.reference ?? ""), amountCents: Number(j.data.amount ?? 0) };
+  }
+}
+
 let active: PaymentProvider | null = null;
 export function getPaymentProvider(): PaymentProvider {
   if (!active) {
     const p = config.payments;
-    active = p.provider === "stripe" ? new StripeProvider(p.stripeSecret, p.stripeWebhookSecret, p.currency) : new MockProvider();
+    active =
+      p.provider === "stripe" ? new StripeProvider(p.stripeSecret, p.stripeWebhookSecret, p.currency)
+      : p.provider === "paystack" ? new PaystackProvider(p.paystackSecret, p.currency)
+      : new MockProvider();
   }
   return active;
 }
