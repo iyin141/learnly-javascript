@@ -10,6 +10,8 @@ export interface PaymentProvider {
   /** `paidNow` = no hosted page (mock). Otherwise send the browser to `url` and wait for the webhook. */
   createSession(i: CheckoutInput): Promise<{ url?: string; paidNow?: boolean; ref?: string }>;
   parseWebhook(raw: Buffer, signature: string | undefined, nowSec?: number): PaidEvent | null;
+  /** Optional: ask the gateway directly whether a payment was made (webhook delayed or lost). */
+  verify?(paymentId: string): Promise<{ paid: boolean; amountCents: number; eventId: string }>;
 }
 
 /** Test-mode provider with no network: the "card" always succeeds immediately. Refuses to run in production. */
@@ -64,16 +66,24 @@ export class PaystackProvider implements PaymentProvider {
   readonly name = "paystack";
   constructor(private secret: string, private currency = "NGN", private base = "https://api.paystack.co") {
     if (!secret.startsWith("sk_test_") && process.env.PAYSTACK_ALLOW_LIVE !== "1") throw new Error("PaystackProvider only accepts test keys (sk_test_...)");
+    if (!["NGN", "GHS", "KES", "ZAR", "USD"].includes(currency)) throw new Error(`unsupported Paystack currency ${currency}: use NGN, GHS, KES, ZAR or USD`);
   }
   async createSession(i: CheckoutInput) {
     const r = await fetch(`${this.base}/transaction/initialize`, {
       method: "POST",
       headers: { Authorization: `Bearer ${this.secret}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ email: i.email, amount: String(i.amountCents), currency: this.currency, reference: i.paymentId, callback_url: i.returnUrl }),
+      body: JSON.stringify({ email: i.email, amount: i.amountCents, currency: this.currency, reference: i.paymentId, callback_url: i.returnUrl, metadata: { paymentId: i.paymentId } }),
     });
     const j = (await r.json()) as { status?: boolean; message?: string; data?: { authorization_url?: string; reference?: string } };
     if (!r.ok || !j.status) throw new Error(`paystack initialize ${r.status}: ${j.message ?? ""}`);
     return { url: j.data?.authorization_url, ref: j.data?.reference };
+  }
+  /** GET /transaction/verify/{reference}: the redirect back from checkout and the manual re-check both use this. */
+  async verify(paymentId: string) {
+    const r = await fetch(`${this.base}/transaction/verify/${encodeURIComponent(paymentId)}`, { headers: { Authorization: `Bearer ${this.secret}` } });
+    const j = (await r.json()) as { status?: boolean; message?: string; data?: { id?: number; status?: string; amount?: number } };
+    if (!r.ok || !j.status) throw new Error(`paystack verify ${r.status}: ${j.message ?? ""}`);
+    return { paid: j.data?.status === "success", amountCents: Number(j.data?.amount ?? 0), eventId: `verify:${j.data?.id ?? paymentId}` };
   }
   parseWebhook(raw: Buffer, signature: string | undefined): PaidEvent | null {
     if (!signature) return null;

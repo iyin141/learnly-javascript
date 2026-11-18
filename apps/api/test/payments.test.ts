@@ -64,3 +64,26 @@ describe("paystack webhook (test mode)", () => {
     expect(() => new PaystackProvider("sk_live_x")).toThrow(/test keys/);
   });
 });
+
+describe("paystack requests (documented endpoints)", () => {
+  it("sends integer amounts and verifies through GET /transaction/verify/{reference}", async () => {
+    const calls: { url: string; body?: any }[] = [];
+    const orig = globalThis.fetch;
+    globalThis.fetch = (async (url: string, init?: RequestInit) => {
+      calls.push({ url, body: init?.body ? JSON.parse(String(init.body)) : undefined });
+      const data = url.includes("initialize") ? { authorization_url: "https://checkout.paystack.com/x", reference: "p1" } : { id: 9, status: "success", amount: 4900 };
+      return new Response(JSON.stringify({ status: true, message: "ok", data }), { status: 200 });
+    }) as typeof fetch;
+    try {
+      const p = new PaystackProvider("sk_test_abc", "NGN");
+      const s = await p.createSession({ paymentId: "p1", amountCents: 4900, courseTitle: "C", email: "a@b.c", returnUrl: "http://x" });
+      expect(s.url).toContain("paystack.com");
+      expect(calls[0].url).toBe("https://api.paystack.co/transaction/initialize");
+      expect(calls[0].body).toMatchObject({ amount: 4900, currency: "NGN", reference: "p1" });
+      expect(typeof calls[0].body.amount).toBe("number");
+      expect(await p.verify("p1")).toEqual({ paid: true, amountCents: 4900, eventId: "verify:9" });
+      expect(calls[1].url).toBe("https://api.paystack.co/transaction/verify/p1");
+      expect(() => new PaystackProvider("sk_test_abc", "EUR")).toThrow(/unsupported/);
+    } finally { globalThis.fetch = orig; }
+  });
+});

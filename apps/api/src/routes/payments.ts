@@ -80,6 +80,24 @@ paymentsRouter.post("/payments/webhook", async (req: Request, res: Response) => 
   res.json({ status: ok ? "posted" : "ignored" });
 });
 
+// POST /api/payments/:id/verify - the shopper came back from the gateway (or the webhook was lost): ask the gateway and enrol if paid
+paymentsRouter.post("/payments/:id/verify", authenticate, async (req: Request, res: Response) => {
+  const id = req.params.id;
+  if (!isUuid(id)) throw new AppError(400, "INVALID_ID", "Invalid payment id");
+  const p = await prisma.payment.findFirst({ where: { id, userId: req.user!.id } });
+  if (!p) throw new AppError(404, "NOT_FOUND", "Payment not found");
+  if (p.status === "paid") { res.json({ status: "paid" }); return; }
+  const provider = getPaymentProvider();
+  if (!provider.verify) throw new AppError(400, "NOT_SUPPORTED", "This payment provider has no verify endpoint");
+  let v;
+  try { v = await provider.verify(p.id); }
+  catch (e) { logger.error({ err: e, paymentId: p.id }, "payment verify failed"); throw new AppError(502, "PAYMENT_PROVIDER_ERROR", "Could not reach the payment service. Try again in a moment."); }
+  if (!v.paid) { res.json({ status: p.status }); return; }
+  // same guarded transition as the webhook, so a webhook arriving at the same moment cannot double-enrol
+  await fulfilPayment(p.id, v.eventId, v.amountCents);
+  res.json({ status: "paid" });
+});
+
 // GET /api/payments/mine - the caller's payment history
 paymentsRouter.get("/payments/mine", authenticate, async (req: Request, res: Response) => {
   const rows = await prisma.payment.findMany({ where: { userId: req.user!.id }, orderBy: { createdAt: "desc" }, take: 50, include: { course: { select: { title: true } } } });
