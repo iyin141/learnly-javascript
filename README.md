@@ -52,6 +52,8 @@ Compose project name: `learnly`. Host ports:
 
 ## Demo logins (password `password123`)
 
+The login page shows these only when the web app is built with `NEXT_PUBLIC_DEMO_LOGINS=1` (off by default). The seed gives every demo account the same public password, so lock or delete them before real users arrive.
+
 | Role | Email |
 |---|---|
 | Admin | admin@learnly.local |
@@ -71,6 +73,35 @@ Browser <-> livekit (WebRTC, direct to the published ports)
 ```
 
 Video: upload (S3 multipart) -> `video` queue -> FFmpeg -> `learnly-media/hls/...` -> `GET /api/lessons/:id/playback` returns a signed `/cdn/...m3u8` URL and sets signed cookies for segments. The second request for a segment returns `X-Cache: HIT`.
+
+## Access rules and flows (as built)
+
+- **Registration** accepts `student` or `instructor` only (the shared zod schema rejects anything else). Admin accounts are never self-service: an admin changes a role in Admin > Users (`PATCH /api/admin/users/:id`).
+- **Course visibility.** `GET /api/courses/:id` returns an unpublished course only to its instructor and to admins (404 for everyone else). Lesson text and video storage keys go only to enrolled students, the course owner and admins; the public catalog (`GET /api/courses`) is unchanged. There is no free-preview flag, so a signed-out visitor sees the outline, not the lessons.
+- **People tab.** `GET /api/courses/:id/people` lists the instructor and the enrolled students (first 500, oldest first). It is open to that course's students, its instructor and admins. Students see names, avatars and join dates; the instructor and admins also see emails and progress. No schema change: it reads `enrolments`.
+- **Paying for a course.** `POST /api/courses/:id/checkout` creates a pending payment and returns the provider's page; the return address is `${WEB_BASE_URL}/courses/:id?payment=<paymentId>`. The course page then calls `POST /api/payments/:id/verify`, so a lost or late webhook does not leave a buyer without access. Publishing a course that is already published is refused (409).
+- **Forgot password.** `POST /api/auth/forgot` always answers 204. `POST /api/auth/reset` takes `{ token, password }`. The token is a stateless JWT signed with a key derived from `JWT_ACCESS_SECRET`, valid 30 minutes, tied to a fingerprint of the current password hash, so it works once; a reset also revokes the user's refresh tokens. No table was added. The email goes through the normal email queue, so it is only delivered if `SMTP_HOST` points at a real mail server (the compose stack uses Mailpit, which keeps mail instead of sending it).
+- **Origins.** `WEB_ORIGIN` is the plain browser origin (CORS and Socket.IO allow it; localhost is allowed only outside production). `WEB_BASE_URL` is that origin plus the base path and is used in links sent to people.
+- **Live updates.** The API still emits `live:*` Socket.IO events but nothing in the web app listens (the Socket.IO connection is unauthenticated, A17), so the live pages poll. `socket.io-client` was removed from the web app.
+
+## Deployed under a subpath (the shared VM)
+
+The same code runs at `https://<host>/learnly-js` next to other apps. `docker-compose.deploy.yml` is the overlay for it:
+
+```
+host nginx  /learnly-js            -> web  (built with NEXT_BASE_PATH=/learnly-js)
+            /learnly-js/api/       -> api  (prefix stripped, cookie paths rewritten)
+            /learnly-js/cdn/       -> cdn (nginx secure_link) -> minio
+            /learnly-js/socket.io/ -> api
+            /<bucket>/...          -> minio  (presigned URLs are signed over host + path, so the three buckets
+                                              `learnlyjs-uploads|media|private` are routed at the domain root)
+            /twirp/                -> LiveKit server API of another stack (the LiveKit SDK drops any path prefix from its URL)
+```
+
+- The database is Neon (`DATABASE_URL`, `DIRECT_URL`); the local `postgres`, `livekit` and `nginx` gateway services are not started. The api runs `prisma migrate deploy` on every start.
+- Bucket names come from `S3_BUCKET_UPLOADS|MEDIA|PRIVATE` (compose, `infra/minio/init.sh` and the CDN template all read them), so two stacks can share one domain.
+- Live classes use a LiveKit server that is already running on the host: `LIVEKIT_URL` is the bare domain (server API through `/twirp/`), `LIVEKIT_PUBLIC_URL` is the `wss://` signalling path browsers use.
+- Needed in the deploy env file: `WEB_ORIGIN`, `WEB_BASE_URL`, `LEARNLY_BASE_PATH`, the `LEARNLY_*` port variables, `S3_PUBLIC_ENDPOINT`, `CDN_SECRET`, `JWT_*`, `PAYSTACK_SECRET_KEY` (or the Stripe pair), `LIVEKIT_*`.
 
 ## Swapping the local pieces for the real thing
 
@@ -100,10 +131,11 @@ Skip link, labelled nav landmarks and form fields, visible focus ring, reduced-m
 
 ## What is untested (honest list)
 
-Everything below was written without being able to install dependencies or pull images, so none of it has been compiled or run:
+Status (2026-11-19): the web, api and worker compile (`tsc --noEmit` is clean), the images build and run on the VM, and the unit tests that need no database pass (rules, payments, reset token). Not exercised end to end, because each needs a signed-in browser or a live service:
 
-- TypeScript compile of the web, api and worker (`pnpm -r build`) and all unit/integration tests.
-- Docker builds of api, worker and web (base `node:22-slim` is local; pnpm, packages, ffmpeg and the LiveKit image need network). `docker compose config` validates the files only.
+- The database-backed tests (`apps/api/test/auth.test.ts` and the other integration tests).
+- The paid-course return and verify flow against Paystack or Stripe, and the password-reset email (delivery needs a real SMTP server).
+- Parallel part upload to S3 (the bucket must let the browser read the `ETag` header; behind the single-domain nginx route this is same-origin and needs no CORS rule).
 - The LiveKit room, raise-hand queue, mic grant, chat persistence and attendance, with real browsers.
 - hls.js playback, signed-URL refresh and resume against a real transcoded video; the CDN `X-Cache: HIT` check.
 - Quiz timer enforcement end to end, certificate PDF issue and the presigned download, verify page.
