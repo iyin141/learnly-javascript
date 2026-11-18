@@ -3,13 +3,13 @@ import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
 import { config } from "../config.js";
 import { AppError } from "./error-handler.js";
-import { UserModel, RefreshTokenModel, type IUser } from "../db.js";
+import { prisma, isUuid, type User } from "../db.js";
 import type { UserRole } from "@learnly/shared";
 
 declare global {
   namespace Express {
     interface Request {
-      user?: IUser;
+      user?: User;
     }
   }
 }
@@ -20,26 +20,21 @@ interface JwtPayload {
   email: string;
 }
 
-export function generateAccessToken(user: IUser): string {
+export function generateAccessToken(user: User): string {
   const payload: JwtPayload = {
-    userId: user._id.toString(),
+    userId: user.id,
     role: user.role,
     email: user.email,
   };
   return jwt.sign(payload, config.jwtAccessSecret, { expiresIn: "15m" });
 }
 
-export async function createRefreshToken(user: IUser): Promise<string> {
+export async function createRefreshToken(user: User): Promise<string> {
   const token = crypto.randomBytes(40).toString("hex");
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
-  await RefreshTokenModel.create({
-    token,
-    userId: user._id,
-    expiresAt,
-    revoked: false,
-  });
+  await prisma.refreshToken.create({ data: { token, userId: user.id, expiresAt, revoked: false } });
 
   return token;
 }
@@ -53,7 +48,7 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
   const token = authHeader.split(" ")[1];
   try {
     const decoded = jwt.verify(token, config.jwtAccessSecret) as JwtPayload;
-    const user = await UserModel.findById(decoded.userId);
+    const user = isUuid(decoded.userId) ? await prisma.user.findUnique({ where: { id: decoded.userId } }) : null;
     if (!user) {
       throw new AppError(401, "UNAUTHORIZED", "User not found or deactivated");
     }
@@ -76,7 +71,7 @@ export async function optionalAuth(req: Request, _res: Response, next: NextFunct
   const token = authHeader.split(" ")[1];
   try {
     const decoded = jwt.verify(token, config.jwtAccessSecret) as JwtPayload;
-    const user = await UserModel.findById(decoded.userId);
+    const user = isUuid(decoded.userId) ? await prisma.user.findUnique({ where: { id: decoded.userId } }) : null;
     if (user) {
       req.user = user;
     }

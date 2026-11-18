@@ -1,12 +1,11 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
-import mongoose from "mongoose";
 import crypto from "node:crypto";
 import { scoreAnswer, type QuizSummary, type QuizQuestionPublic } from "@learnly/shared";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { AppError } from "../middleware/error-handler.js";
-import { CourseModel, EnrolmentModel } from "../db.js";
-import { AttemptModel, QuestionModel, QuizModel } from "../db-learning.js";
+import { prisma, Prisma, isUuid } from "../db.js";
+import type { Attempt, Question, Quiz } from "@learnly/db";
 import { evaluateCompletion } from "../services/learning.js";
 
 export const quizzesRouter = Router();
@@ -14,68 +13,76 @@ export const quizzesRouter = Router();
 export const GRACE_SECONDS = 5;
 
 const oid = (v: string) => {
-  if (!mongoose.isValidObjectId(v)) throw new AppError(400, "INVALID_ID", "Invalid id");
+  if (!isUuid(v)) throw new AppError(400, "INVALID_ID", "Invalid id");
   return v;
 };
 
-async function canAccessCourse(req: Request, courseId: unknown) {
-  const course = await CourseModel.findById(courseId);
+type Opt = { id: string; text: string };
+const optsOf = (q: { options: unknown }) => ((q.options ?? []) as Opt[]);
+const answersOf = (a: { answers: unknown }) => ((a.answers ?? {}) as Record<string, unknown>);
+const scoreInput = (q: Question) => ({ id: q.id, type: q.type as "single" | "multiple" | "true_false" | "short", points: q.points, correct: q.correct });
+
+async function canAccessCourse(req: Request, courseId: string) {
+  const course = await prisma.course.findUnique({ where: { id: courseId } });
   if (!course) throw new AppError(404, "NOT_FOUND", "Course not found");
   const u = req.user!;
-  if (u.role === "admin" || String(course.instructorId) === String(u._id)) return { course, staff: true };
-  if (!(await EnrolmentModel.exists({ userId: u._id, courseId }))) throw new AppError(403, "FORBIDDEN", "You must be enrolled in this course");
+  if (u.role === "admin" || course.instructorId === u.id) return { course, staff: true };
+  if (!(await prisma.enrolment.findUnique({ where: { userId_courseId: { userId: u.id, courseId } }, select: { id: true } })))
+    throw new AppError(403, "FORBIDDEN", "You must be enrolled in this course");
   return { course, staff: false };
 }
 
-async function summarise(quiz: any, userId: unknown): Promise<QuizSummary> {
+async function summarise(quiz: Quiz, userId: string): Promise<QuizSummary> {
   const [qs, attempts] = await Promise.all([
-    QuestionModel.find({ quizId: quiz._id }).select("points"),
-    AttemptModel.find({ quizId: quiz._id, userId, submittedAt: { $exists: true } }).select("scorePercent passed"),
+    prisma.question.findMany({ where: { quizId: quiz.id }, select: { points: true } }),
+    prisma.attempt.findMany({ where: { quizId: quiz.id, userId }, select: { submittedAt: true, scorePercent: true, passed: true } }),
   ]);
-  const inProgress = await AttemptModel.countDocuments({ quizId: quiz._id, userId, submittedAt: { $exists: false } });
+  const submitted = attempts.filter((a) => a.submittedAt);
+  const inProgress = attempts.length - submitted.length;
   return {
-    id: String(quiz._id),
-    courseId: String(quiz.courseId),
+    id: quiz.id,
+    courseId: quiz.courseId,
     title: quiz.title,
     description: quiz.description,
-    unitLabel: quiz.unitLabel,
+    unitLabel: quiz.unitLabel ?? undefined,
     timeLimitMinutes: quiz.timeLimitMinutes,
     passMarkPercent: quiz.passMarkPercent,
     maxAttempts: quiz.maxAttempts,
     questionCount: qs.length,
     totalPoints: qs.reduce((a, q) => a + (q.points ?? 1), 0),
-    attemptsUsed: attempts.length + inProgress,
-    bestScorePercent: attempts.length ? Math.max(...attempts.map((a) => a.scorePercent ?? 0)) : undefined,
-    passed: attempts.some((a) => a.passed),
+    attemptsUsed: submitted.length + inProgress,
+    bestScorePercent: submitted.length ? Math.max(...submitted.map((a) => a.scorePercent ?? 0)) : undefined,
+    passed: submitted.some((a) => a.passed),
     required: quiz.required,
   };
 }
 
 quizzesRouter.get("/courses/:courseId/quizzes", requireAuth, async (req: Request, res: Response) => {
-  await canAccessCourse(req, oid(req.params.courseId));
-  const quizzes = await QuizModel.find({ courseId: req.params.courseId }).sort({ createdAt: 1 });
-  res.json({ quizzes: await Promise.all(quizzes.map((q) => summarise(q, req.user!._id))) });
+  const courseId = oid(req.params.courseId);
+  await canAccessCourse(req, courseId);
+  const quizzes = await prisma.quiz.findMany({ where: { courseId }, orderBy: { createdAt: "asc" } });
+  res.json({ quizzes: await Promise.all(quizzes.map((q) => summarise(q, req.user!.id))) });
 });
 
 quizzesRouter.get("/quizzes/:id", requireAuth, async (req: Request, res: Response) => {
-  const quiz = await QuizModel.findById(oid(req.params.id));
+  const quiz = await prisma.quiz.findUnique({ where: { id: oid(req.params.id) } });
   if (!quiz) throw new AppError(404, "NOT_FOUND", "Quiz not found");
   await canAccessCourse(req, quiz.courseId);
-  res.json({ quiz: await summarise(quiz, req.user!._id) });
+  res.json({ quiz: await summarise(quiz, req.user!.id) });
 });
 
-function publicQuestions(questions: any[], order: unknown[]): QuizQuestionPublic[] {
-  const by = new Map(questions.map((q) => [String(q._id), q]));
+function publicQuestions(questions: Question[], order: string[]): QuizQuestionPublic[] {
+  const by = new Map(questions.map((q) => [q.id, q]));
   return order
-    .map((id) => by.get(String(id)))
-    .filter(Boolean)
+    .map((id) => by.get(id))
+    .filter((q): q is Question => !!q)
     .map((q) => ({
-      id: String(q._id),
+      id: q.id,
       type: q.type,
       prompt: q.prompt,
-      topic: q.topic,
+      topic: q.topic ?? undefined,
       points: q.points,
-      options: (q.options ?? []).map((o: any) => ({ id: o.id, text: o.text })), // never expose `correct`
+      options: optsOf(q).map((o) => ({ id: o.id, text: o.text })), // never expose `correct`
     }));
 }
 
@@ -90,45 +97,47 @@ const shuffle = <T,>(a: T[]) => {
 
 // Start (or resume) an attempt. The server stores startedAt/endsAt; the client never supplies time.
 quizzesRouter.post("/quizzes/:id/attempts", requireAuth, async (req: Request, res: Response) => {
-  const quiz = await QuizModel.findById(oid(req.params.id));
+  const quiz = await prisma.quiz.findUnique({ where: { id: oid(req.params.id) } });
   if (!quiz) throw new AppError(404, "NOT_FOUND", "Quiz not found");
   await canAccessCourse(req, quiz.courseId);
-  const questions = await QuestionModel.find({ quizId: quiz._id }).sort({ order: 1 });
+  const questions = await prisma.question.findMany({ where: { quizId: quiz.id }, orderBy: { order: "asc" } });
   if (!questions.length) throw new AppError(409, "EMPTY_QUIZ", "This quiz has no questions yet");
 
   const now = new Date();
-  let attempt = await AttemptModel.findOne({ quizId: quiz._id, userId: req.user!._id, submittedAt: { $exists: false } });
+  let attempt = await prisma.attempt.findFirst({ where: { quizId: quiz.id, userId: req.user!.id, submittedAt: null } });
   if (attempt && attempt.endsAt.getTime() + GRACE_SECONDS * 1000 < now.getTime()) {
     await finalize(attempt, true); // stale unsubmitted attempt counts as used and is auto-submitted
     attempt = null;
   }
   if (!attempt) {
-    const used = await AttemptModel.countDocuments({ quizId: quiz._id, userId: req.user!._id });
+    const used = await prisma.attempt.count({ where: { quizId: quiz.id, userId: req.user!.id } });
     if (used >= quiz.maxAttempts) throw new AppError(409, "ATTEMPTS_EXHAUSTED", "No attempts left for this quiz");
-    attempt = await AttemptModel.create({
-      quizId: quiz._id,
-      userId: req.user!._id,
-      courseId: quiz.courseId,
-      startedAt: now,
-      endsAt: new Date(now.getTime() + quiz.timeLimitMinutes * 60_000),
-      questionOrder: (quiz.shuffle ? shuffle(questions) : questions).map((q) => q._id),
+    attempt = await prisma.attempt.create({
+      data: {
+        quizId: quiz.id,
+        userId: req.user!.id,
+        courseId: quiz.courseId,
+        startedAt: now,
+        endsAt: new Date(now.getTime() + quiz.timeLimitMinutes * 60_000),
+        questionOrder: (quiz.shuffle ? shuffle(questions) : questions).map((q) => q.id),
+      },
     });
   }
   res.status(201).json({
-    attemptId: String(attempt._id),
-    quizId: String(quiz._id),
+    attemptId: attempt.id,
+    quizId: quiz.id,
     startedAt: attempt.startedAt.toISOString(),
     endsAt: attempt.endsAt.toISOString(),
     serverNow: new Date().toISOString(),
     questions: publicQuestions(questions, attempt.questionOrder),
-    answers: attempt.answers ?? {},
+    answers: answersOf(attempt),
     flagged: attempt.flagged,
   });
 });
 
 async function loadOwnAttempt(req: Request) {
-  const attempt = await AttemptModel.findById(oid(req.params.id));
-  if (!attempt || String(attempt.userId) !== String(req.user!._id)) throw new AppError(404, "NOT_FOUND", "Attempt not found");
+  const attempt = await prisma.attempt.findUnique({ where: { id: oid(req.params.id) } });
+  if (!attempt || attempt.userId !== req.user!.id) throw new AppError(404, "NOT_FOUND", "Attempt not found");
   return attempt;
 }
 
@@ -139,67 +148,68 @@ quizzesRouter.put("/attempts/:id/answers", requireAuth, async (req: Request, res
   const attempt = await loadOwnAttempt(req);
   if (attempt.submittedAt) throw new AppError(409, "ATTEMPT_CLOSED", "Attempt already submitted");
   if (Date.now() > attempt.endsAt.getTime() + GRACE_SECONDS * 1000) throw new AppError(409, "ATTEMPT_EXPIRED", "Time is up");
-  if (!attempt.questionOrder.some((q) => String(q) === body.questionId)) throw new AppError(400, "BAD_QUESTION", "Question is not part of this attempt");
-  if (body.answer !== undefined) {
-    attempt.answers = { ...(attempt.answers as object), [body.questionId]: body.answer };
-    attempt.markModified("answers");
-  }
+  if (!attempt.questionOrder.includes(body.questionId)) throw new AppError(400, "BAD_QUESTION", "Question is not part of this attempt");
+  const data: Prisma.AttemptUpdateInput = {};
+  if (body.answer !== undefined) data.answers = { ...answersOf(attempt), [body.questionId]: body.answer } as Prisma.InputJsonObject;
   if (body.flagged !== undefined) {
     const s = new Set(attempt.flagged);
-    body.flagged ? s.add(body.questionId) : s.delete(body.questionId);
-    attempt.flagged = [...s];
+    if (body.flagged) s.add(body.questionId); else s.delete(body.questionId);
+    data.flagged = [...s];
   }
-  await attempt.save();
+  // only an open attempt can be written: the submittedAt filter closes the race with a simultaneous submit
+  const r = await prisma.attempt.updateMany({ where: { id: attempt.id, submittedAt: null }, data: data as Prisma.AttemptUpdateManyMutationInput });
+  if (r.count !== 1) throw new AppError(409, "ATTEMPT_CLOSED", "Attempt already submitted");
   res.json({ ok: true });
 });
 
-async function finalize(attempt: any, timedOut: boolean) {
-  const quiz = await QuizModel.findById(attempt.quizId);
-  const questions = await QuestionModel.find({ quizId: attempt.quizId });
+async function finalize(attempt: Attempt, timedOut: boolean) {
+  const quiz = await prisma.quiz.findUnique({ where: { id: attempt.quizId } });
+  const questions = await prisma.question.findMany({ where: { quizId: attempt.quizId } });
+  const given = answersOf(attempt);
   let scorePoints = 0;
   let maxPoints = 0;
   const review = questions.map((q) => {
-    const given = (attempt.answers as Record<string, unknown>)?.[String(q._id)];
-    const earned = scoreAnswer({ id: String(q._id), type: q.type as any, points: q.points, correct: q.correct }, given);
+    const earned = scoreAnswer(scoreInput(q), given[q.id] as never);
     scorePoints += earned;
     maxPoints += q.points;
     return {
-      questionId: String(q._id),
+      questionId: q.id,
       prompt: q.prompt,
       correct: earned === q.points,
       earned,
       points: q.points,
       explanation: q.explanation ?? undefined,
       correctOptionIds: q.type === "short" ? [] : q.correct,
-      given,
+      given: given[q.id],
     };
   });
-  attempt.submittedAt = new Date();
-  attempt.timedOut = timedOut;
-  attempt.scorePoints = scorePoints;
-  attempt.maxPoints = maxPoints;
-  attempt.scorePercent = maxPoints ? (scorePoints / maxPoints) * 100 : 0;
-  attempt.passed = attempt.scorePercent >= (quiz?.passMarkPercent ?? 70);
-  await attempt.save();
-  return review;
+  const scorePercent = maxPoints ? (scorePoints / maxPoints) * 100 : 0;
+  const passed = scorePercent >= (quiz?.passMarkPercent ?? 70);
+  // finalise exactly once: a second concurrent submit matches zero rows
+  const r = await prisma.attempt.updateMany({
+    where: { id: attempt.id, submittedAt: null },
+    data: { submittedAt: new Date(), timedOut, scorePoints, maxPoints, scorePercent, passed },
+  });
+  if (r.count !== 1) throw new AppError(409, "ATTEMPT_CLOSED", "Attempt already submitted");
+  return { review, scorePoints, maxPoints, scorePercent, passed };
 }
 
 quizzesRouter.post("/attempts/:id/submit", requireAuth, async (req: Request, res: Response) => {
   const attempt = await loadOwnAttempt(req);
   if (attempt.submittedAt) throw new AppError(409, "ATTEMPT_CLOSED", "Attempt already submitted");
   const timedOut = Date.now() > attempt.endsAt.getTime() + GRACE_SECONDS * 1000;
-  const review = await finalize(attempt, timedOut);
+  const result = await finalize(attempt, timedOut);
   let certificateIssued = false;
-  if (attempt.passed) certificateIssued = (await evaluateCompletion(attempt.userId, attempt.courseId)).issued;
+  if (result.passed) certificateIssued = (await evaluateCompletion(attempt.userId, attempt.courseId)).issued;
   res.json({
-    attemptId: String(attempt._id),
-    scorePoints: attempt.scorePoints,
-    maxPoints: attempt.maxPoints,
-    scorePercent: attempt.scorePercent,
-    passed: attempt.passed,
+    attemptId: attempt.id,
+    scorePoints: result.scorePoints,
+    maxPoints: result.maxPoints,
+    scorePercent: result.scorePercent,
+    passed: result.passed,
     timedOut,
     certificateIssued,
-    review,
+    review: result.review,
   });
 });
 
@@ -228,36 +238,49 @@ const QuizBody = z.object({
 });
 
 async function ownCourse(req: Request, courseId: string) {
-  const course = await CourseModel.findById(oid(courseId));
+  const course = await prisma.course.findUnique({ where: { id: oid(courseId) } });
   if (!course) throw new AppError(404, "NOT_FOUND", "Course not found");
-  if (req.user!.role !== "admin" && String(course.instructorId) !== String(req.user!._id)) throw new AppError(403, "FORBIDDEN", "Not your course");
+  if (req.user!.role !== "admin" && course.instructorId !== req.user!.id) throw new AppError(403, "FORBIDDEN", "Not your course");
   return course;
 }
 
 quizzesRouter.post("/courses/:courseId/quizzes", requireAuth, requireRole("instructor", "admin"), async (req: Request, res: Response) => {
   await ownCourse(req, req.params.courseId);
   const { questions, ...meta } = QuizBody.parse(req.body);
-  const quiz = await QuizModel.create({ ...meta, courseId: req.params.courseId });
-  await QuestionModel.insertMany(
-    questions.map((q, i) => ({ ...q, correct: q.type === "short" ? q.correct.map((c) => c.trim().toLowerCase()) : q.correct, quizId: quiz._id, order: i }))
-  );
-  res.status(201).json({ quiz: await summarise(quiz, req.user!._id) });
+  // quiz and questions in one transaction: no quiz without its questions
+  const quiz = await prisma.quiz.create({
+    data: {
+      ...meta,
+      courseId: req.params.courseId,
+      questions: {
+        create: questions.map((q, i) => ({
+          type: q.type,
+          prompt: q.prompt,
+          topic: q.topic,
+          points: q.points,
+          options: q.options as Prisma.InputJsonValue,
+          correct: q.type === "short" ? q.correct.map((c) => c.trim().toLowerCase()) : q.correct,
+          explanation: q.explanation,
+          order: i,
+        })),
+      },
+    },
+  });
+  res.status(201).json({ quiz: await summarise(quiz, req.user!.id) });
 });
 
 quizzesRouter.get("/quizzes/:id/analytics", requireAuth, requireRole("instructor", "admin"), async (req: Request, res: Response) => {
-  const quiz = await QuizModel.findById(oid(req.params.id));
+  const quiz = await prisma.quiz.findUnique({ where: { id: oid(req.params.id) } });
   if (!quiz) throw new AppError(404, "NOT_FOUND", "Quiz not found");
-  await ownCourse(req, String(quiz.courseId));
+  await ownCourse(req, quiz.courseId);
   const [questions, attempts] = await Promise.all([
-    QuestionModel.find({ quizId: quiz._id }).sort({ order: 1 }),
-    AttemptModel.find({ quizId: quiz._id, submittedAt: { $exists: true } }),
+    prisma.question.findMany({ where: { quizId: quiz.id }, orderBy: { order: "asc" } }),
+    prisma.attempt.findMany({ where: { quizId: quiz.id, submittedAt: { not: null } } }),
   ]);
   const perQuestion = questions.map((q) => {
-    const answered = attempts.filter((a) => (a.answers as any)?.[String(q._id)] != null);
-    const right = answered.filter((a) =>
-      scoreAnswer({ id: String(q._id), type: q.type as any, points: q.points, correct: q.correct }, (a.answers as any)[String(q._id)]) === q.points
-    ).length;
-    return { questionId: String(q._id), prompt: q.prompt, answered: answered.length, correctRate: answered.length ? right / answered.length : null };
+    const answered = attempts.filter((a) => answersOf(a)[q.id] != null);
+    const right = answered.filter((a) => scoreAnswer(scoreInput(q), answersOf(a)[q.id] as never) === q.points).length;
+    return { questionId: q.id, prompt: q.prompt, answered: answered.length, correctRate: answered.length ? right / answered.length : null };
   });
   res.json({
     attempts: attempts.length,

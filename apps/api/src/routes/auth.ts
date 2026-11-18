@@ -1,20 +1,20 @@
 import { Router, type Request, type Response } from "express";
 import bcrypt from "bcryptjs";
 import { RegisterRequestSchema, LoginRequestSchema, type User } from "@learnly/shared";
-import { UserModel, RefreshTokenModel, type IUser } from "../db.js";
+import { prisma, type User as DbUser } from "../db.js";
 import { generateAccessToken, createRefreshToken, authenticate } from "../middleware/auth.js";
 import { authRateLimiter } from "../middleware/rate-limiter.js";
 import { AppError } from "../middleware/error-handler.js";
 
 export const authRouter = Router();
 
-function formatUser(user: IUser): User {
+function formatUser(user: DbUser): User {
   return {
-    id: user._id.toString(),
+    id: user.id,
     name: user.name,
     email: user.email,
     role: user.role,
-    avatarUrl: user.avatarUrl,
+    avatarUrl: user.avatarUrl ?? undefined,
     createdAt: user.createdAt.toISOString(),
   };
 }
@@ -46,7 +46,7 @@ function clearAuthCookies(res: Response): void {
 authRouter.post("/register", authRateLimiter, async (req: Request, res: Response) => {
   const body = RegisterRequestSchema.parse(req.body);
 
-  const existing = await UserModel.findOne({ email: body.email.toLowerCase() });
+  const existing = await prisma.user.findUnique({ where: { email: body.email.toLowerCase() } });
   if (existing) {
     throw new AppError(409, "EMAIL_EXISTS", "A user with this email already exists");
   }
@@ -54,12 +54,14 @@ authRouter.post("/register", authRateLimiter, async (req: Request, res: Response
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash(body.password, salt);
 
-  const user = await UserModel.create({
-    name: body.name,
-    email: body.email.toLowerCase(),
-    passwordHash,
-    role: body.role,
-  });
+  let user;
+  try {
+    user = await prisma.user.create({ data: { name: body.name, email: body.email.toLowerCase(), passwordHash, role: body.role } });
+  } catch (e: any) {
+    // two simultaneous registrations with the same email: the unique index decides, the loser gets the normal 409
+    if (e?.code === "P2002") throw new AppError(409, "EMAIL_EXISTS", "A user with this email already exists");
+    throw e;
+  }
 
   const accessToken = generateAccessToken(user);
   const refreshToken = await createRefreshToken(user);
@@ -74,7 +76,7 @@ authRouter.post("/register", authRateLimiter, async (req: Request, res: Response
 authRouter.post("/login", authRateLimiter, async (req: Request, res: Response) => {
   const body = LoginRequestSchema.parse(req.body);
 
-  const user = await UserModel.findOne({ email: body.email.toLowerCase() });
+  const user = await prisma.user.findUnique({ where: { email: body.email.toLowerCase() } });
   if (!user) {
     throw new AppError(401, "INVALID_CREDENTIALS", "Invalid email or password");
   }
@@ -100,25 +102,29 @@ authRouter.post("/refresh", async (req: Request, res: Response) => {
     throw new AppError(401, "NO_REFRESH_TOKEN", "Refresh token cookie missing");
   }
 
-  const storedToken = await RefreshTokenModel.findOne({ token });
+  const storedToken = await prisma.refreshToken.findUnique({ where: { token } });
   if (!storedToken || storedToken.revoked || storedToken.expiresAt < new Date()) {
     if (storedToken && storedToken.revoked) {
       // Possible reuse attack: revoke all tokens for this user
-      await RefreshTokenModel.updateMany({ userId: storedToken.userId }, { revoked: true });
+      await prisma.refreshToken.updateMany({ where: { userId: storedToken.userId }, data: { revoked: true } });
     }
     clearAuthCookies(res);
     throw new AppError(401, "INVALID_REFRESH_TOKEN", "Refresh token is invalid or expired");
   }
 
-  const user = await UserModel.findById(storedToken.userId);
+  const user = await prisma.user.findUnique({ where: { id: storedToken.userId } });
   if (!user) {
     clearAuthCookies(res);
     throw new AppError(401, "USER_NOT_FOUND", "User associated with token no longer exists");
   }
 
   // Rotate token: revoke old one, create new one
-  storedToken.revoked = true;
-  await storedToken.save();
+  // conditional update: if two refreshes race with the same token only one wins
+  const rotated = await prisma.refreshToken.updateMany({ where: { id: storedToken.id, revoked: false }, data: { revoked: true } });
+  if (rotated.count !== 1) {
+    clearAuthCookies(res);
+    throw new AppError(401, "INVALID_REFRESH_TOKEN", "Refresh token is invalid or expired");
+  }
 
   const newRefreshToken = await createRefreshToken(user);
   const newAccessToken = generateAccessToken(user);
@@ -133,7 +139,7 @@ authRouter.post("/refresh", async (req: Request, res: Response) => {
 authRouter.post("/logout", async (req: Request, res: Response) => {
   const token = req.cookies?.refreshToken;
   if (token) {
-    await RefreshTokenModel.updateOne({ token }, { revoked: true });
+    await prisma.refreshToken.updateMany({ where: { token }, data: { revoked: true } });
   }
   clearAuthCookies(res);
   res.json({ message: "Logged out successfully" });

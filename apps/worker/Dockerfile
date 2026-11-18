@@ -4,12 +4,14 @@ RUN npm install -g pnpm@9.15.9
 
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/shared/package.json packages/shared/
+COPY packages/db/package.json packages/db/
 COPY apps/api/package.json apps/api/
 COPY apps/worker/package.json apps/worker/
 RUN pnpm install --frozen-lockfile=false --filter @learnly/worker... --filter @learnly/api...
 
 COPY packages/shared packages/shared
-RUN pnpm --filter @learnly/shared build
+COPY packages/db packages/db
+RUN pnpm --filter @learnly/shared build && pnpm --filter @learnly/db build
 COPY apps/api apps/api
 COPY apps/worker apps/worker
 RUN pnpm --filter @learnly/worker build

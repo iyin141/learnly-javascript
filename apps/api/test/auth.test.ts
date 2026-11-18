@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import mongoose from "mongoose";
 import { createApp } from "../src/app.js";
-import { UserModel } from "../src/db.js";
+import { prisma } from "../src/db.js";
 import { redis } from "../src/redis.js";
 import http from "node:http";
 
@@ -11,8 +10,7 @@ describe("API Auth and Health Suite", { timeout: 20000 }, () => {
 
   beforeAll(async () => {
     // Connect to local Mongo and Redis
-    const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/learnly_test";
-    await mongoose.connect(mongoUri);
+    await prisma.$connect();
 
     const app = createApp();
     server = http.createServer(app);
@@ -26,8 +24,8 @@ describe("API Auth and Health Suite", { timeout: 20000 }, () => {
   });
 
   afterAll(async () => {
-    await UserModel.deleteMany({ email: /@test\.learnly$/ });
-    await mongoose.disconnect();
+    await prisma.user.deleteMany({ where: { email: { endsWith: "@test.learnly" } } });
+    await prisma.$disconnect();
     try {
       await redis.quit();
     } catch {}

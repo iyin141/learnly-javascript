@@ -1,8 +1,7 @@
 import { Worker, Job } from "bullmq";
 import nodemailer from "nodemailer";
 import pino from "pino";
-import { EnrolmentModel, CourseModel } from "../../api/src/db.js";
-import { LiveSessionModel } from "../../api/src/db-learning.js";
+import { prisma } from "@learnly/db";
 
 const logger = pino({ level: process.env.LOG_LEVEL || "info" });
 const transport = nodemailer.createTransport({
@@ -25,12 +24,12 @@ export function startNotificationWorkers(connection: any) {
   const reminders = new Worker(
     "reminders",
     async (job: Job<{ sessionId: string }>) => {
-      const s = await LiveSessionModel.findById(job.data.sessionId);
+      const s = await prisma.liveSession.findUnique({ where: { id: job.data.sessionId } });
       if (!s || s.status !== "scheduled") return;
-      const course = await CourseModel.findById(s.courseId);
-      const enrolments = await EnrolmentModel.find({ courseId: s.courseId }).populate("userId", "email");
+      const course = await prisma.course.findUnique({ where: { id: s.courseId } });
+      const enrolments = await prisma.enrolment.findMany({ where: { courseId: s.courseId }, include: { user: { select: { email: true } } } });
       for (const e of enrolments) {
-        const to = (e.userId as any)?.email;
+        const to = e.user?.email;
         if (to) await transport.sendMail({ from: FROM, to, subject: `Starting soon: ${s.title}`, text: `${course?.title}: "${s.title}" starts in 15 minutes. Join from the Live page.` });
       }
     },

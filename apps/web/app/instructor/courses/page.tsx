@@ -17,13 +17,16 @@ export default function InstructorCoursesIndexPage() {
   const [createCourse, { isLoading: creating }] = useCreateCourseMutation();
   const [open, setOpen] = useState(false);
   const [err, setErr] = useState("");
-  const [nf, setNf] = useState({ title: "", code: "", term: "", description: "", subjectColor: "blue" });
+  const [nf, setNf] = useState({ title: "", code: "", term: "", description: "", subjectColor: "blue", price: "" });
   // "Create or Join" in the header links here with ?new=1
   useEffect(() => { if (new URLSearchParams(window.location.search).get("new") === "1") setOpen(true); }, []);
   async function create() {
     setErr("");
     try {
-      const r = await createCourse(nf).unwrap();
+      const { price, ...rest } = nf;
+      const cents = Math.round(Number(price) * 100);
+      if (price && (!Number.isFinite(cents) || cents < 0)) { setErr("Enter a valid price"); return; }
+      const r = await createCourse({ ...rest, ...(price ? { priceCents: cents } : {}) }).unwrap();
       setOpen(false);
       router.push(`/instructor/courses/${r.course.id}/builder`);
     } catch (e: any) {
@@ -48,6 +51,7 @@ export default function InstructorCoursesIndexPage() {
         <ModalField label="Title"><input className="modal-input" value={nf.title} onChange={(e) => setNf({ ...nf, title: e.target.value })} minLength={3} required /></ModalField>
         <ModalField label="Course code" hint="For example CS 101"><input className="modal-input" value={nf.code} onChange={(e) => setNf({ ...nf, code: e.target.value })} minLength={2} maxLength={20} required /></ModalField>
         <ModalField label="Term" hint="Optional"><input className="modal-input" value={nf.term} onChange={(e) => setNf({ ...nf, term: e.target.value })} placeholder="Self-paced" /></ModalField>
+        <ModalField label="Price (USD)" hint="Leave empty for a free course. Paid courses are bought in test mode."><input className="modal-input" inputMode="decimal" pattern="[0-9]*(\\.[0-9]{0,2})?" value={nf.price} onChange={(e) => setNf({ ...nf, price: e.target.value })} /></ModalField>
         <ModalField label="Description" hint="Optional"><textarea className="modal-input" rows={3} value={nf.description} onChange={(e) => setNf({ ...nf, description: e.target.value })} /></ModalField>
         <ModalField label="Colour"><select className="modal-input capitalize" value={nf.subjectColor} onChange={(e) => setNf({ ...nf, subjectColor: e.target.value })}>{COLORS.map((c) => <option key={c} value={c}>{c}</option>)}</select></ModalField>
       </FormModal>

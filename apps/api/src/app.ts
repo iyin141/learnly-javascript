@@ -19,6 +19,7 @@ import { quizzesRouter } from "./routes/quizzes.js";
 import { certificatesRouter } from "./routes/certificates.js";
 import { liveRouter } from "./routes/live.js";
 import { adminRouter } from "./routes/admin.js";
+import { paymentsRouter } from "./routes/payments.js";
 
 export function createApp(): express.Application {
   const app = express();
@@ -37,7 +38,8 @@ export function createApp(): express.Application {
     })
   );
 
-  app.use(express.json({ limit: "10mb" }));
+  // keep the raw bytes: payment webhooks are signed over the exact body
+  app.use(express.json({ limit: "10mb", verify: (req, _res, buf) => { (req as any).rawBody = buf; } }));
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
   app.use(requestIdMiddleware);
@@ -59,6 +61,7 @@ export function createApp(): express.Application {
   app.use("/healthz", healthRouter);
   app.use("/readyz", healthRouter);
   app.use("/api/auth", authRouter);
+  app.use("/api", paymentsRouter);
   app.use("/api/courses", coursesRouter);
   app.use("/api/courses", builderRouter);
   app.use("/api/uploads", uploadsRouter);

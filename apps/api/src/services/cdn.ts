@@ -12,6 +12,8 @@ export interface SignedPlaybackResult {
     path: string;
     expires: Date;
   };
+  /** CloudFront needs three cookies; set each with the CDN cookie domain. */
+  cookies?: { name: string; value: string }[];
 }
 
 export interface ICdnSigner {
@@ -60,24 +62,36 @@ export class NginxSecureLinkSigner implements ICdnSigner {
   }
 }
 
+/** CloudFront URL-safe base64: + / = become - ~ _ */
+const cfB64 = (b: Buffer) => b.toString("base64").replace(/\+/g, "-").replace(/=/g, "_").replace(/\//g, "~");
+
 /**
- * AWS CloudFront Signer (production AWS environment)
+ * AWS CloudFront signer (CDN_SIGNER=cloudfront). Custom policy with a wildcard resource covering the whole lesson folder,
+ * so the signed master playlist URL also authorises every segment; the same policy and signature are returned as the
+ * three CloudFront cookies for players that fetch segments by relative URL. Signing is RSA-SHA1 over the policy, as
+ * CloudFront requires, using node:crypto (no extra dependency). Needs CDN_CF_DOMAIN, CDN_CF_KEY_PAIR_ID, CDN_CF_PRIVATE_KEY (PEM).
  */
 export class CloudFrontSigner implements ICdnSigner {
   signPlayback(uriPath: string, ttlSeconds: number = config.cdn.urlTtlSeconds): SignedPlaybackResult {
+    const { domain, keyPairId, privateKey } = config.cdn.cloudfront;
+    if (!domain || !keyPairId || !privateKey) throw new Error("CDN_SIGNER=cloudfront needs CDN_CF_DOMAIN, CDN_CF_KEY_PAIR_ID and CDN_CF_PRIVATE_KEY");
     const expires = Math.floor(Date.now() / 1000) + ttlSeconds;
-    // Production CloudFront signer implementation using key-pair ID & private key
-    logger.info({ uriPath }, "Signing URL using AWS CloudFront signer (production)");
+    const path = uriPath.startsWith("/") ? uriPath : `/${uriPath}`;
+    const folder = path.slice(0, path.lastIndexOf("/") + 1);
+    const policy = JSON.stringify({ Statement: [{ Resource: `https://${domain}${folder}*`, Condition: { DateLessThan: { "AWS:EpochTime": expires } } }] });
+    const signature = cfB64(crypto.createSign("RSA-SHA1").update(policy).sign(privateKey.replace(/\\n/g, "\n")));
+    const encPolicy = cfB64(Buffer.from(policy));
+    logger.debug({ path }, "signed CloudFront URL");
     return {
-      url: `${uriPath}?Key-Pair-Id=PROD_KEY&Policy=EXAMPLE`,
-      token: "prod_token",
+      url: `https://${domain}${path}?Policy=${encPolicy}&Signature=${signature}&Key-Pair-Id=${keyPairId}`,
+      token: signature,
       expires,
-      cookie: {
-        name: "CloudFront-Signature",
-        value: "prod_cookie",
-        path: "/cdn/",
-        expires: new Date(expires * 1000),
-      },
+      cookie: { name: "CloudFront-Signature", value: signature, path: "/", expires: new Date(expires * 1000) },
+      cookies: [
+        { name: "CloudFront-Policy", value: encPolicy },
+        { name: "CloudFront-Signature", value: signature },
+        { name: "CloudFront-Key-Pair-Id", value: keyPairId },
+      ],
     };
   }
 }

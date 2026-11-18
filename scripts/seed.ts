@@ -1,21 +1,21 @@
-import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import { UserModel, CourseModel, SectionModel, LessonModel, EnrolmentModel } from "../apps/api/src/db.js";
-import { QuizModel, QuestionModel, AttemptModel, CertificateModel, LiveSessionModel, PaymentModel } from "../apps/api/src/db-learning.js";
+import { prisma } from "@learnly/db";
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/learnly";
+/** Thin adapters so the seed reads like declarative data: M.user.create({...}) -> prisma.user.create({ data: {...} }). */
+const wrap = (d: any) => ({ create: (data: any) => d.create({ data }), deleteMany: () => d.deleteMany() });
+const UserModel = wrap(prisma.user), CourseModel = wrap(prisma.course), SectionModel = wrap(prisma.section), LessonModel = wrap(prisma.lesson);
+const EnrolmentModel = wrap(prisma.enrolment), PaymentModel = wrap(prisma.payment), QuizModel = wrap(prisma.quiz), QuestionModel = wrap(prisma.question);
+const AttemptModel = wrap(prisma.attempt), CertificateModel = wrap(prisma.certificate), LiveSessionModel = wrap(prisma.liveSession);
 
 async function seed() {
-  console.log("Connecting to MongoDB at:", MONGO_URI);
-  await mongoose.connect(MONGO_URI);
+  console.log("Connecting to PostgreSQL (DATABASE_URL)...");
+  await prisma.$connect();
 
-  console.log("Clearing existing database collections...");
-  await UserModel.deleteMany({});
-  await CourseModel.deleteMany({});
-  await SectionModel.deleteMany({});
-  await LessonModel.deleteMany({});
-  await EnrolmentModel.deleteMany({});
-  for (const m of [QuizModel, QuestionModel, AttemptModel, CertificateModel, LiveSessionModel, PaymentModel]) await m.deleteMany({});
+  console.log("Clearing existing tables...");
+  // children first; ON DELETE CASCADE covers most, this keeps it explicit and order-safe
+  for (const m of [PaymentModel, CertificateModel, AttemptModel, QuestionModel, QuizModel, LiveSessionModel, EnrolmentModel, LessonModel, SectionModel, CourseModel]) await m.deleteMany();
+  await prisma.refreshToken.deleteMany();
+  await UserModel.deleteMany();
 
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash("password123", salt);
@@ -78,7 +78,7 @@ async function seed() {
     term: "Fall 2026",
     sectionName: "Section 02",
     description: "Introduction to Python programming, computational thinking, and algorithms.",
-    instructorId: instructor1._id,
+    instructorId: instructor1.id,
     status: "published",
     subjectColor: "blue",
     estimatedHours: 40,
@@ -93,7 +93,7 @@ async function seed() {
     term: "Fall 2026",
     sectionName: "Studio A",
     description: "Designing intuitive interfaces, interaction heuristics, and design systems.",
-    instructorId: instructor2._id,
+    instructorId: instructor2.id,
     status: "published",
     subjectColor: "coral",
     estimatedHours: 35,
@@ -105,7 +105,7 @@ async function seed() {
     term: "Fall 2026",
     sectionName: "Lab 04",
     description: "Molecular genetics, heredity, gene editing, and contemporary bioethics.",
-    instructorId: instructor3._id,
+    instructorId: instructor3.id,
     status: "published",
     subjectColor: "teal",
     estimatedHours: 45,
@@ -117,10 +117,11 @@ async function seed() {
     term: "Fall 2026",
     sectionName: "Cohort B",
     description: "Supervised and unsupervised learning, model validation, and metrics.",
-    instructorId: instructor1._id,
+    instructorId: instructor1.id,
     status: "published",
     subjectColor: "purple",
     estimatedHours: 50,
+    priceCents: 4900,
   });
 
   const course5 = await CourseModel.create({
@@ -129,7 +130,7 @@ async function seed() {
     term: "Fall 2026",
     sectionName: "Section 01",
     description: "Trade routes, monetary systems, and economic revolutions from 1500 to present.",
-    instructorId: instructor2._id,
+    instructorId: instructor2.id,
     status: "published",
     subjectColor: "amber",
     estimatedHours: 30,
@@ -141,21 +142,21 @@ async function seed() {
     term: "Fall 2026",
     sectionName: "Section 03",
     description: "Clear writing, API documentation, research papers, and technical proposals.",
-    instructorId: instructor3._id,
+    instructorId: instructor3.id,
     status: "published",
     subjectColor: "slate",
     estimatedHours: 25,
   });
 
   console.log("Creating curriculum sections and lessons for CS 101...");
-  const sec1 = await SectionModel.create({ courseId: course1._id, title: "Unit 1: Python Fundamentals", order: 1 });
-  const sec2 = await SectionModel.create({ courseId: course1._id, title: "Unit 2: Control Flow & Functions", order: 2 });
-  const sec3 = await SectionModel.create({ courseId: course1._id, title: "Unit 3: Data Structures", order: 3 });
-  const sec4 = await SectionModel.create({ courseId: course1._id, title: "Unit 4: Recursion & Algorithms", order: 4 });
+  const sec1 = await SectionModel.create({ courseId: course1.id, title: "Unit 1: Python Fundamentals", order: 1 });
+  const sec2 = await SectionModel.create({ courseId: course1.id, title: "Unit 2: Control Flow & Functions", order: 2 });
+  const sec3 = await SectionModel.create({ courseId: course1.id, title: "Unit 3: Data Structures", order: 3 });
+  const sec4 = await SectionModel.create({ courseId: course1.id, title: "Unit 4: Recursion & Algorithms", order: 4 });
 
   const les1 = await LessonModel.create({
-    courseId: course1._id,
-    sectionId: sec1._id,
+    courseId: course1.id,
+    sectionId: sec1.id,
     title: "1.1 Setting up Python 3 and VSCode",
     type: "video",
     order: 1,
@@ -163,8 +164,8 @@ async function seed() {
     video: { status: "ready", durationSeconds: 720 },
   });
   const les2 = await LessonModel.create({
-    courseId: course1._id,
-    sectionId: sec1._id,
+    courseId: course1.id,
+    sectionId: sec1.id,
     title: "1.2 Variables, Expressions & Types",
     type: "video",
     order: 2,
@@ -172,8 +173,8 @@ async function seed() {
     video: { status: "ready", durationSeconds: 900 },
   });
   const les3 = await LessonModel.create({
-    courseId: course1._id,
-    sectionId: sec4._id,
+    courseId: course1.id,
+    sectionId: sec4.id,
     title: "4.1 Introduction to Call Stacks",
     type: "video",
     order: 1,
@@ -183,40 +184,52 @@ async function seed() {
 
   console.log("Enrolling primary student in courses with partial progress...");
   await EnrolmentModel.create({
-    userId: primaryStudent._id,
-    courseId: course1._id,
+    userId: primaryStudent.id,
+    courseId: course1.id,
     status: "active",
     progressPercent: 68,
-    completedLessons: [les1._id, les2._id],
-    lastLessonId: les3._id,
+    completedLessons: [les1.id, les2.id],
+    lastLessonId: les3.id,
     lastPositionSeconds: 120,
   });
 
   await EnrolmentModel.create({
-    userId: primaryStudent._id,
-    courseId: course2._id,
+    userId: primaryStudent.id,
+    courseId: course2.id,
     status: "active",
     progressPercent: 42,
     completedLessons: [],
   });
 
   await EnrolmentModel.create({
-    userId: primaryStudent._id,
-    courseId: course3._id,
+    userId: primaryStudent.id,
+    courseId: course3.id,
     status: "active",
     progressPercent: 85,
     completedLessons: [],
   });
 
   await EnrolmentModel.create({
-    userId: primaryStudent._id,
-    courseId: course4._id,
+    userId: primaryStudent.id,
+    courseId: course4.id,
     status: "active",
     progressPercent: 20,
     completedLessons: [],
   });
 
   console.log("\n==================================================");
+  // Paid-course sales spread over the last 4 months so the instructor revenue chart has history.
+  // Net earnings = amount minus the 10% platform fee (same rule as the live checkout).
+  const now = new Date();
+  const monthsAgo = (m: number, day: number) => new Date(now.getFullYear(), now.getMonth() - m, day, 12);
+  const sales: [typeof course4, number, number][] = [[course4, 3, 3], [course4, 2, 5], [course4, 1, 8], [course4, 0, 4]];
+  for (const [course, m, count] of sales) {
+    for (let k = 0; k < count; k++) {
+      const amount = course.priceCents;
+      await PaymentModel.create({ userId: primaryStudent.id, courseId: course.id, amountCents: amount, feeCents: Math.round(amount / 10), provider: "mock", status: "paid", createdAt: monthsAgo(m, 2 + k * 3) });
+    }
+  }
+
   console.log("SEEDING COMPLETED SUCCESSFULLY!");
   console.log("==================================================");
   console.log("Demo logins (Password for all: password123):");
@@ -225,7 +238,7 @@ async function seed() {
   console.log("  Admin:      admin@learnly.local");
   console.log("==================================================\n");
 
-  await mongoose.disconnect();
+  await prisma.$disconnect();
 }
 
 seed().catch((err) => {

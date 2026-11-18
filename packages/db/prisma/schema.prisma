@@ -1,0 +1,307 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  student
+  instructor
+  admin
+}
+enum CourseStatus {
+  draft
+  in_review
+  published
+}
+enum LessonType {
+  video
+  text
+  file
+}
+enum EnrolmentStatus {
+  active
+  completed
+  archived
+}
+enum QuestionType {
+  single
+  multiple
+  true_false
+  short
+}
+enum LiveStatus {
+  scheduled
+  live
+  ended
+}
+enum PaymentStatus {
+  pending
+  paid
+  failed
+}
+
+model User {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  email         String         @unique
+  passwordHash  String         @map("password_hash")
+  role          Role           @default(student)
+  avatarUrl     String?        @map("avatar_url")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  refreshTokens RefreshToken[]
+  courses       Course[]
+  enrolments    Enrolment[]
+  payments      Payment[]
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  token     String   @unique
+  userId    String   @map("user_id") @db.Uuid
+  expiresAt DateTime @map("expires_at")
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+model Course {
+  id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title             String
+  code              String
+  term              String        @default("Fall 2026")
+  sectionName       String        @default("Section 01") @map("section_name")
+  description       String
+  instructorId      String        @map("instructor_id") @db.Uuid
+  status            CourseStatus  @default(published)
+  subjectColor      String        @default("blue") @map("subject_color")
+  estimatedHours    Int           @default(20) @map("estimated_hours")
+  priceCents        Int           @default(0) @map("price_cents")
+  isLiveNow         Boolean       @default(false) @map("is_live_now")
+  upcomingLiveTitle String?       @map("upcoming_live_title")
+  upcomingLiveDate  DateTime?     @map("upcoming_live_date")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+  instructor        User          @relation(fields: [instructorId], references: [id])
+  sections          Section[]
+  lessons           Lesson[]
+  enrolments        Enrolment[]
+  quizzes           Quiz[]
+  liveSessions      LiveSession[]
+  payments          Payment[]
+  certificates      Certificate[]
+  @@index([instructorId])
+  @@index([status])
+  @@index([code])
+  @@map("courses")
+}
+
+model Section {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  courseId  String   @map("course_id") @db.Uuid
+  title     String
+  order     Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons   Lesson[]
+  @@index([courseId])
+  @@map("sections")
+}
+
+model Lesson {
+  id              String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  courseId        String     @map("course_id") @db.Uuid
+  sectionId       String     @map("section_id") @db.Uuid
+  title           String
+  type            LessonType @default(video)
+  order           Int        @default(0)
+  durationSeconds Int        @default(0) @map("duration_seconds")
+  /// { status, durationSeconds, renditions[], masterPlaylistPath, posterPath, thumbnailPaths[], errorReason, rawUploadKey }
+  video           Json?
+  textContent     String?    @map("text_content")
+  fileUrl         String?    @map("file_url")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+  course          Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  section         Section    @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  @@index([courseId])
+  @@index([sectionId])
+  @@map("lessons")
+}
+
+model Enrolment {
+  id                  String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId              String          @map("user_id") @db.Uuid
+  courseId            String          @map("course_id") @db.Uuid
+  status              EnrolmentStatus @default(active)
+  progressPercent     Int             @default(0) @map("progress_percent")
+  completedLessons    String[]        @default([]) @map("completed_lessons")
+  lastLessonId        String?         @map("last_lesson_id")
+  lastPositionSeconds Int             @default(0) @map("last_position_seconds")
+  createdAt           DateTime        @default(now()) @map("created_at")
+  updatedAt           DateTime        @updatedAt @map("updated_at")
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course              Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  @@unique([userId, courseId])
+  @@index([courseId])
+  @@index([status])
+  @@map("enrolments")
+}
+
+model Quiz {
+  id               String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  courseId         String     @map("course_id") @db.Uuid
+  title            String
+  description      String     @default("")
+  unitLabel        String?    @map("unit_label")
+  timeLimitMinutes Int        @default(20) @map("time_limit_minutes")
+  passMarkPercent  Int        @default(70) @map("pass_mark_percent")
+  maxAttempts      Int        @default(3) @map("max_attempts")
+  required         Boolean    @default(true)
+  shuffle          Boolean    @default(true)
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+  course           Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  questions        Question[]
+  attempts         Attempt[]
+  @@index([courseId])
+  @@map("quizzes")
+}
+
+model Question {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quizId      String       @map("quiz_id") @db.Uuid
+  type        QuestionType @default(single)
+  prompt      String
+  topic       String?
+  points      Float        @default(1)
+  /// [{ id, text }]
+  options     Json         @default("[]")
+  /// option ids, or accepted short answers (lowercase)
+  correct     String[]     @default([])
+  explanation String?
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  quiz        Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  @@index([quizId])
+  @@map("questions")
+}
+
+model Attempt {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quizId        String    @map("quiz_id") @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  courseId      String    @map("course_id") @db.Uuid
+  startedAt     DateTime  @map("started_at")
+  endsAt        DateTime  @map("ends_at")
+  submittedAt   DateTime? @map("submitted_at")
+  questionOrder String[]  @default([]) @map("question_order")
+  answers       Json      @default("{}")
+  flagged       String[]  @default([])
+  scorePoints   Float?    @map("score_points")
+  maxPoints     Float?    @map("max_points")
+  scorePercent  Float?    @map("score_percent")
+  passed        Boolean?
+  timedOut      Boolean   @default(false) @map("timed_out")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  quiz          Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  @@index([quizId])
+  @@index([userId])
+  @@map("attempts")
+}
+
+model Certificate {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code      String   @unique
+  userId    String   @map("user_id") @db.Uuid
+  courseId  String   @map("course_id") @db.Uuid
+  issuedAt  DateTime @default(now()) @map("issued_at")
+  pdfKey    String?  @map("pdf_key")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@map("certificates")
+}
+
+model LiveSession {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  courseId        String       @map("course_id") @db.Uuid
+  instructorId    String       @map("instructor_id") @db.Uuid
+  title           String
+  code            String       @unique
+  startsAt        DateTime     @map("starts_at")
+  durationMinutes Int          @default(60) @map("duration_minutes")
+  status          LiveStatus   @default(scheduled)
+  startedAt       DateTime?    @map("started_at")
+  endedAt         DateTime?    @map("ended_at")
+  recording       Boolean      @default(false)
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  course          Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  attendance      Attendance[]
+  messages        Message[]
+  @@index([courseId])
+  @@index([startsAt])
+  @@index([status])
+  @@map("live_sessions")
+}
+
+model Attendance {
+  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId String      @map("session_id") @db.Uuid
+  userId    String      @map("user_id") @db.Uuid
+  joinedAt  DateTime    @default(now()) @map("joined_at")
+  leftAt    DateTime?   @map("left_at")
+  session   LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  @@index([sessionId])
+  @@map("attendance")
+}
+
+model Message {
+  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId String      @map("session_id") @db.Uuid
+  userId    String      @map("user_id") @db.Uuid
+  userName  String?     @map("user_name")
+  role      String?
+  text      String
+  createdAt DateTime    @default(now()) @map("created_at")
+  session   LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  @@index([sessionId])
+  @@map("messages")
+}
+
+model Payment {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String        @map("user_id") @db.Uuid
+  courseId    String        @map("course_id") @db.Uuid
+  amountCents Int           @map("amount_cents")
+  feeCents    Int           @default(0) @map("fee_cents")
+  currency    String        @default("usd")
+  provider    String        @default("mock")
+  status      PaymentStatus @default(paid)
+  providerRef String?       @map("provider_ref")
+  /// unique webhook event id: replayed deliveries cannot enrol twice
+  eventId     String?       @unique @map("event_id")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  @@index([courseId])
+  @@index([status])
+  @@index([userId])
+  @@map("payments")
+}

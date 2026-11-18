@@ -1,8 +1,7 @@
 import { Worker, Job } from "bullmq";
-import mongoose from "mongoose";
 import pino from "pino";
 import { VideoTranscoder, TranscodeJobData } from "./transcoder.js";
-import { LessonModel, connectDB } from "../../api/src/db.js";
+import { prisma, Prisma } from "@learnly/db";
 import { startNotificationWorkers } from "./notifications.js";
 
 const logger = pino({ level: process.env.LOG_LEVEL || "info" });
@@ -17,12 +16,21 @@ const connection = {
 
 const transcoder = new VideoTranscoder();
 
+/** Merge fields into the lesson.video JSON column (read-modify-write; one worker owns a lesson at a time). */
+async function patchLesson(lessonId: string, video: Record<string, unknown>, extra: Prisma.LessonUpdateInput = {}) {
+  const cur = await prisma.lesson.findUnique({ where: { id: lessonId }, select: { video: true } });
+  if (!cur) throw new Error(`lesson ${lessonId} no longer exists`);
+  await prisma.lesson.update({
+    where: { id: lessonId },
+    data: { ...extra, video: { ...((cur.video as Record<string, unknown> | null) ?? {}), ...video } as Prisma.InputJsonObject },
+  });
+}
+
 async function startWorker() {
   logger.info("Initializing Learnly Video Worker...");
 
-  const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/learnly";
-  await mongoose.connect(mongoUri);
-  logger.info("Connected to MongoDB at %s", mongoUri);
+  await prisma.$connect();
+  logger.info("Connected to PostgreSQL");
 
   const worker = new Worker(
     "video",
@@ -32,9 +40,7 @@ async function startWorker() {
       const { lessonId, courseId } = job.data;
 
       // Update lesson status to transcoding
-      await LessonModel.findByIdAndUpdate(lessonId, {
-        $set: { "video.status": "transcoding" },
-      });
+      await patchLesson(lessonId, { status: "transcoding" });
 
       try {
         const result = await transcoder.process(job.data, async (progress) => {
@@ -42,17 +48,18 @@ async function startWorker() {
         });
 
         // Update lesson status to ready
-        await LessonModel.findByIdAndUpdate(lessonId, {
-          $set: {
-            "video.status": "ready",
-            "video.durationSeconds": result.durationSeconds,
-            "video.renditions": result.renditions,
-            "video.masterPlaylistPath": result.masterPlaylistPath,
-            "video.posterPath": result.posterPath,
-            "video.thumbnailPaths": result.thumbnailPaths,
+        await patchLesson(
+          lessonId,
+          {
+            status: "ready",
             durationSeconds: result.durationSeconds,
+            renditions: result.renditions,
+            masterPlaylistPath: result.masterPlaylistPath,
+            posterPath: result.posterPath,
+            thumbnailPaths: result.thumbnailPaths,
           },
-        });
+          { durationSeconds: Math.round(result.durationSeconds) }
+        );
 
         logger.info(
           { lessonId, duration: result.durationSeconds },
@@ -62,12 +69,7 @@ async function startWorker() {
         return result;
       } catch (err: any) {
         logger.error({ err, lessonId }, "Transcoding failed for lesson");
-        await LessonModel.findByIdAndUpdate(lessonId, {
-          $set: {
-            "video.status": "failed",
-            "video.errorReason": err.message || "Transcoding failed",
-          },
-        });
+        await patchLesson(lessonId, { status: "failed", errorReason: err.message || "Transcoding failed" }).catch((e) => logger.error({ e }, "could not record failure"));
         throw err;
       }
     },
@@ -94,7 +96,7 @@ async function startWorker() {
     logger.info("Worker shutting down...");
     await worker.close();
     await Promise.all(extra.map((w) => w.close()));
-    await mongoose.disconnect();
+    await prisma.$disconnect();
     process.exit(0);
   };
 

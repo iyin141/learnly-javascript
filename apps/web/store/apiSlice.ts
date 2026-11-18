@@ -121,6 +121,10 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: (_result, _error, id) => ["MyCourses", { type: "Course", id }],
     }),
+    checkoutCourse: builder.mutation<{ status: "paid" | "pending"; paymentId: string; checkoutUrl?: string; provider: string }, string>({
+      query: (courseId) => ({ url: `/courses/${courseId}/checkout`, method: "POST" }),
+      invalidatesTags: (_result, _error, id) => ["MyCourses", { type: "Course", id }],
+    }),
     getMyCourses: builder.query<
       {
         enrolments: {
@@ -202,7 +206,7 @@ export const apiSlice = createApi({
       query: () => "/instructor/courses",
       providesTags: ["Instructor"],
     }),
-    createCourse: builder.mutation<{ course: { id: string; title: string; code: string; status: string } }, { title: string; code: string; term?: string; description?: string; subjectColor?: string }>({
+    createCourse: builder.mutation<{ course: { id: string; title: string; code: string; status: string } }, { title: string; code: string; term?: string; description?: string; subjectColor?: string; priceCents?: number }>({
       query: (body) => ({ url: "/instructor/courses", method: "POST", body }),
       invalidatesTags: ["Instructor"],
     }),
@@ -210,7 +214,7 @@ export const apiSlice = createApi({
       query: (id) => ({ url: `/instructor/courses/${id}/submit`, method: "POST" }),
       invalidatesTags: ["Instructor"],
     }),
-    getRevenue: builder.query<{ rows: { courseId: string; course: string; month: string; enrolments: number; earningsCents: number }[]; totalEnrolments: number; totalEarningsCents: number }, void>({
+    getRevenue: builder.query<{ rows: { courseId: string; course: string; month: string; enrolments: number; earningsCents: number; grossCents: number }[]; totalEnrolments: number; totalEarningsCents: number; totalGrossCents: number }, void>({
       query: () => "/instructor/revenue",
     }),
     createQuiz: builder.mutation<{ quiz: QuizSummary }, { courseId: string; body: unknown }>({
@@ -327,5 +331,6 @@ export const {
   useGetCoursesQuery,
   useGetCourseQuery,
   useEnrollCourseMutation,
+  useCheckoutCourseMutation,
   useGetMyCoursesQuery,
 } = apiSlice;

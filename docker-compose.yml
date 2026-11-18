@@ -1,13 +1,15 @@
 name: learnly
 
 services:
-  mongo:
-    image: mongo:7.0
+  # Local PostgreSQL for development. In production point DATABASE_URL / DIRECT_URL at Neon and ignore this service.
+  postgres:
+    image: postgres:16-alpine
     restart: unless-stopped
-    volumes: [mongo-data:/data/db]
-    ports: ["127.0.0.1:27017:27017"]
+    environment: { POSTGRES_USER: learnly, POSTGRES_PASSWORD: learnly, POSTGRES_DB: learnly }
+    volumes: [pg-data:/var/lib/postgresql/data]
+    ports: ["127.0.0.1:5434:5432"]
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      test: ["CMD-SHELL", "pg_isready -U learnly -d learnly"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -101,7 +103,13 @@ services:
     build: { context: ., dockerfile: apps/api/Dockerfile }
     restart: unless-stopped
     environment: &appenv
-      MONGO_URI: mongodb://mongo:27017/learnly
+      DATABASE_URL: ${DATABASE_URL:-postgresql://learnly:learnly@postgres:5432/learnly}
+      DIRECT_URL: ${DIRECT_URL:-postgresql://learnly:learnly@postgres:5432/learnly}
+      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-mock}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      PLATFORM_FEE_BPS: ${PLATFORM_FEE_BPS:-1000}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost}
       REDIS_URL: redis://redis:6379
       S3_ENDPOINT: http://minio:9000
       S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT:-http://localhost:9010}
@@ -116,7 +124,7 @@ services:
       LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:-devsecret-devsecret-devsecret-0123456789}
       SMTP_HOST: mailpit
     depends_on:
-      mongo: { condition: service_healthy }
+      postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
       minio-init: { condition: service_completed_successfully }
     healthcheck:
@@ -158,7 +166,7 @@ services:
       retries: 20
 
 volumes:
-  mongo-data:
+  pg-data:
   redis-data:
   minio-data:
   cdn-cache:

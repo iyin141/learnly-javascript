@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { CircularProgress } from "../../../components/CircularProgress";
 import { LessonList } from "../../../components/LessonList";
-import { useGetCourseQuery, useGetCourseQuizzesQuery, useEnrollCourseMutation } from "../../../store/apiSlice";
+import { useGetCourseQuery, useGetCourseQuizzesQuery, useEnrollCourseMutation, useCheckoutCourseMutation } from "../../../store/apiSlice";
 
 export default function CourseOverviewPage() {
   const params = useParams();
@@ -18,6 +18,17 @@ export default function CourseOverviewPage() {
   const enrolment = serverData?.enrolment;
   const { data: quizzes } = useGetCourseQuizzesQuery(courseId, { skip: !enrolment });
   const [enroll, { isLoading: enrolling }] = useEnrollCourseMutation();
+  const [checkout, { isLoading: buying }] = useCheckoutCourseMutation();
+  const [buyError, setBuyError] = useState("");
+  const priceCents = course?.priceCents ?? 0;
+  /** Paid course: start checkout. Mock provider enrols at once; Stripe returns a hosted page and the webhook enrols on return. */
+  async function buy() {
+    setBuyError("");
+    try {
+      const r = await checkout(courseId).unwrap();
+      if (r.checkoutUrl) window.location.href = r.checkoutUrl;
+    } catch (e: any) { setBuyError(e?.data?.error?.message ?? "Payment could not be started"); }
+  }
   const completed = new Set(enrolment?.completedLessons ?? []);
   const flat = (course?.sections ?? []).flatMap((s) => s.lessons);
   const resumeLesson = flat.find((l) => l.id === enrolment?.lastLessonId) ?? flat.find((l) => !completed.has(l.id)) ?? flat[0];
@@ -183,10 +194,11 @@ export default function CourseOverviewPage() {
                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
               </Link>
             ) : (
-              <button disabled={enrolling} onClick={() => enroll(courseId)} className="w-full sm:w-auto min-h-11 inline-flex items-center justify-center gap-space-xs px-space-lg py-space-sm bg-white text-primary hover:bg-white/90 font-label-md text-label-md font-semibold rounded-full shadow-md transition-all active:scale-95 disabled:opacity-60">
-                <span>{enrolling ? "Enrolling..." : "Enrol in this course"}</span>
+              <button disabled={enrolling || buying} onClick={() => (priceCents > 0 ? void buy() : void enroll(courseId))} className="w-full sm:w-auto min-h-11 inline-flex items-center justify-center gap-space-xs px-space-lg py-space-sm bg-white text-primary hover:bg-white/90 font-label-md text-label-md font-semibold rounded-full shadow-md transition-all active:scale-95 disabled:opacity-60">
+                <span>{enrolling || buying ? "Working..." : priceCents > 0 ? `Buy for $${(priceCents / 100).toFixed(2)}` : "Enrol in this course"}</span>
               </button>
             )}
+            {buyError && <p role="alert" className="text-red-200 font-caption text-caption">{buyError}</p>}
           </div>
         </div>
       </section>

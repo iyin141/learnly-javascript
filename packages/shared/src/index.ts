@@ -90,6 +90,8 @@ export interface Course {
   status: CourseStatus;
   subjectColor: SubjectColor;
   estimatedHours: number;
+  /** 0 = free. Paid courses are bought through POST /courses/:id/checkout. */
+  priceCents?: number;
   totalLessons: number;
   totalQuizzes: number;
   isLiveNow?: boolean;
@@ -116,7 +118,7 @@ export interface Enrolment {
 export interface ReadinessReport {
   status: "ok" | "degraded" | "down";
   components: {
-    mongo: boolean;
+    postgres: boolean;
     redis: boolean;
     s3: boolean;
     livekit: boolean;

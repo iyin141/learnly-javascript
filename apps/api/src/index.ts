@@ -55,6 +55,8 @@ async function main(): Promise<void> {
   });
 }
 
+process.on("unhandledRejection", (err) => logger.error({ err }, "unhandledRejection"));
+
 main().catch((err) => {
   logger.fatal({ err }, "Fatal startup error in API");
   process.exit(1);

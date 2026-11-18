@@ -1,8 +1,7 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
-import mongoose from "mongoose";
 import { requireAuth, requireRole } from "../middleware/auth.js";
-import { CourseModel, SectionModel, LessonModel } from "../db.js";
+import { prisma, isUuid } from "../db.js";
 import { logger } from "../logger.js";
 
 export const builderRouter = Router();
@@ -14,12 +13,12 @@ async function requireCourseAccess(req: Request, res: Response, next: () => void
     return res.status(400).json({ error: { code: "BAD_REQUEST", message: "Course ID is required" } });
   }
 
-  const course = await CourseModel.findById(courseId);
+  const course = isUuid(courseId) ? await prisma.course.findUnique({ where: { id: courseId } }) : null;
   if (!course) {
     return res.status(404).json({ error: { code: "NOT_FOUND", message: "Course not found" } });
   }
 
-  if (req.user?.role !== "admin" && String(course.instructorId) !== String(req.user?._id)) {
+  if (req.user?.role !== "admin" && course.instructorId !== req.user?.id) {
     return res.status(403).json({ error: { code: "FORBIDDEN", message: "Not permitted to edit this course" } });
   }
 
@@ -40,12 +39,8 @@ builderRouter.post(
     const { title } = z.object({ title: z.string().min(1) }).parse(req.body);
     const courseId = req.params.courseId;
 
-    const count = await SectionModel.countDocuments({ courseId });
-    const section = await SectionModel.create({
-      courseId,
-      title,
-      order: count,
-    });
+    const count = await prisma.section.count({ where: { courseId } });
+    const section = await prisma.section.create({ data: { courseId, title, order: count } });
 
     res.status(201).json({ section });
   }
@@ -67,11 +62,9 @@ builderRouter.put(
     });
     const parsed = schema.parse(req.body);
 
-    const section = await SectionModel.findOneAndUpdate(
-      { _id: req.params.sectionId, courseId: req.params.courseId },
-      { $set: parsed },
-      { new: true }
-    );
+    const sectionId = req.params.sectionId;
+    const hit = isUuid(sectionId) ? await prisma.section.updateMany({ where: { id: sectionId, courseId: req.params.courseId }, data: parsed }) : { count: 0 };
+    const section = hit.count ? await prisma.section.findUnique({ where: { id: sectionId } }) : null;
 
     if (!section) {
       return res.status(404).json({ error: { code: "NOT_FOUND", message: "Section not found" } });
@@ -93,10 +86,10 @@ builderRouter.delete(
   async (req: Request, res: Response) => {
     const { courseId, sectionId } = req.params;
 
-    await LessonModel.deleteMany({ courseId, sectionId });
-    const deleted = await SectionModel.findOneAndDelete({ _id: sectionId, courseId });
+    // lessons go with the section (ON DELETE CASCADE); the count says whether the section existed for this course
+    const deleted = isUuid(sectionId) ? await prisma.section.deleteMany({ where: { id: sectionId, courseId } }) : { count: 0 };
 
-    if (!deleted) {
+    if (!deleted.count) {
       return res.status(404).json({ error: { code: "NOT_FOUND", message: "Section not found" } });
     }
 
@@ -123,17 +116,19 @@ builderRouter.post(
     });
     const parsed = schema.parse(req.body);
 
-    const count = await LessonModel.countDocuments({ courseId, sectionId });
-    const lesson = await LessonModel.create({
-      courseId,
-      sectionId,
-      title: parsed.title,
-      type: parsed.type,
-      durationSeconds: parsed.durationSeconds,
-      textContent: parsed.textContent,
-      order: count,
-      video: {
-        status: parsed.type === "video" ? "uploaded" : "ready",
+    const section = isUuid(sectionId) ? await prisma.section.findFirst({ where: { id: sectionId, courseId } }) : null;
+    if (!section) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Section not found" } });
+    const count = await prisma.lesson.count({ where: { courseId, sectionId } });
+    const lesson = await prisma.lesson.create({
+      data: {
+        courseId,
+        sectionId,
+        title: parsed.title,
+        type: parsed.type,
+        durationSeconds: parsed.durationSeconds,
+        textContent: parsed.textContent,
+        order: count,
+        video: { status: parsed.type === "video" ? "uploaded" : "ready" },
       },
     });
 
@@ -161,11 +156,12 @@ builderRouter.put(
     });
     const parsed = schema.parse(req.body);
 
-    const lesson = await LessonModel.findOneAndUpdate(
-      { _id: req.params.lessonId, courseId: req.params.courseId },
-      { $set: parsed },
-      { new: true }
-    );
+    const lessonId = req.params.lessonId;
+    if (parsed.sectionId && !(isUuid(parsed.sectionId) && (await prisma.section.findFirst({ where: { id: parsed.sectionId, courseId: req.params.courseId } })))) {
+      return res.status(404).json({ error: { code: "NOT_FOUND", message: "Target section not found" } });
+    }
+    const hit = isUuid(lessonId) ? await prisma.lesson.updateMany({ where: { id: lessonId, courseId: req.params.courseId }, data: parsed }) : { count: 0 };
+    const lesson = hit.count ? await prisma.lesson.findUnique({ where: { id: lessonId } }) : null;
 
     if (!lesson) {
       return res.status(404).json({ error: { code: "NOT_FOUND", message: "Lesson not found" } });
@@ -185,12 +181,10 @@ builderRouter.delete(
   requireRole("instructor", "admin"),
   requireCourseAccess,
   async (req: Request, res: Response) => {
-    const deleted = await LessonModel.findOneAndDelete({
-      _id: req.params.lessonId,
-      courseId: req.params.courseId,
-    });
+    const lessonId = req.params.lessonId;
+    const deleted = isUuid(lessonId) ? await prisma.lesson.deleteMany({ where: { id: lessonId, courseId: req.params.courseId } }) : { count: 0 };
 
-    if (!deleted) {
+    if (!deleted.count) {
       return res.status(404).json({ error: { code: "NOT_FOUND", message: "Lesson not found" } });
     }
 
@@ -226,24 +220,15 @@ builderRouter.put(
 
     const { sections, lessons } = ReorderSchema.parse(req.body);
 
-    if (sections) {
-      await Promise.all(
-        sections.map((s) =>
-          SectionModel.updateOne({ _id: s.id, courseId: req.params.courseId }, { $set: { order: s.order } })
-        )
-      );
-    }
+    const courseId = req.params.courseId;
+    const ids = [...(sections ?? []).map((s) => s.id), ...(lessons ?? []).flatMap((l) => [l.id, l.sectionId])];
+    if (ids.some((i) => !isUuid(i))) return res.status(400).json({ error: { code: "INVALID_ID", message: "Invalid id in reorder payload" } });
 
-    if (lessons) {
-      await Promise.all(
-        lessons.map((l) =>
-          LessonModel.updateOne(
-            { _id: l.id, courseId: req.params.courseId },
-            { $set: { sectionId: l.sectionId, order: l.order } }
-          )
-        )
-      );
-    }
+    // one transaction: a half-applied reorder would leave the curriculum in a mixed order
+    await prisma.$transaction([
+      ...(sections ?? []).map((s) => prisma.section.updateMany({ where: { id: s.id, courseId }, data: { order: s.order } })),
+      ...(lessons ?? []).map((l) => prisma.lesson.updateMany({ where: { id: l.id, courseId }, data: { sectionId: l.sectionId, order: l.order } })),
+    ]);
 
     res.status(200).json({ message: "Course curriculum reordered successfully" });
   }

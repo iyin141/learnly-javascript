@@ -5,11 +5,13 @@ RUN npm install -g pnpm@9.15.9
 
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/shared/package.json packages/shared/
+COPY packages/db/package.json packages/db/
 COPY apps/api/package.json apps/api/
 RUN pnpm install --frozen-lockfile=false --filter @learnly/api...
 
 COPY packages/shared packages/shared
-RUN pnpm --filter @learnly/shared build
+COPY packages/db packages/db
+RUN pnpm --filter @learnly/shared build && pnpm --filter @learnly/db build
 COPY apps/api apps/api
 RUN pnpm --filter @learnly/api build
 
@@ -20,4 +22,5 @@ ENV NODE_ENV=production
 COPY --from=builder --chown=node:node /app /app
 USER node
 EXPOSE 4000
-CMD ["node", "apps/api/dist/index.js"]
+# apply pending migrations (DIRECT_URL: Neon direct connection) and start; migrate deploy is a no-op when up to date
+CMD ["sh", "-c", "pnpm --filter @learnly/db migrate && node apps/api/dist/index.js"]

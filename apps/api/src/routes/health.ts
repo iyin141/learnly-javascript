@@ -1,5 +1,5 @@
 import { Router } from "express";
-import mongoose from "mongoose";
+import { prisma } from "../db.js";
 import { S3Client, HeadBucketCommand } from "@aws-sdk/client-s3";
 import { redis } from "../redis.js";
 import { config } from "../config.js";
@@ -14,13 +14,13 @@ healthRouter.get(["/", "/healthz"], (_req, res) => {
 healthRouter.get("/readyz", async (_req, res) => {
   const details: Record<string, string> = {};
 
-  // 1. Mongo check
-  let mongoOk = false;
+  // 1. Postgres check
+  let dbOk = false;
   try {
-    mongoOk = mongoose.connection.readyState === 1;
-    if (!mongoOk) details.mongo = "Not connected";
+    await prisma.$queryRaw`SELECT 1`;
+    dbOk = true;
   } catch (err: any) {
-    details.mongo = err.message || "Failed to check MongoDB";
+    details.postgres = err.message || "Failed to check PostgreSQL";
   }
 
   // 2. Redis check
@@ -60,13 +60,13 @@ healthRouter.get("/readyz", async (_req, res) => {
     details.livekit = err.message || "LiveKit check failed";
   }
 
-  const allOk = mongoOk && redisOk && s3Ok && livekitOk;
-  const anyOk = mongoOk || redisOk || s3Ok;
+  const allOk = dbOk && redisOk && s3Ok && livekitOk;
+  const anyOk = dbOk || redisOk || s3Ok;
 
   const report: ReadinessReport = {
     status: allOk ? "ok" : anyOk ? "degraded" : "down",
     components: {
-      mongo: mongoOk,
+      postgres: dbOk,
       redis: redisOk,
       s3: s3Ok,
       livekit: livekitOk,

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
 import { requireAuth, requireRole } from "../middleware/auth.js";
-import { CourseModel, LessonModel } from "../db.js";
+import { prisma, isUuid } from "../db.js";
 import {
   initMultipartUpload,
   getPartPresignedUrls,
@@ -69,20 +69,20 @@ uploadsRouter.post(
   async (req: Request, res: Response) => {
     const parsed = InitUploadSchema.parse(req.body);
 
-    const course = await CourseModel.findById(parsed.courseId);
+    const course = isUuid(parsed.courseId) ? await prisma.course.findUnique({ where: { id: parsed.courseId } }) : null;
     if (!course) {
       return res.status(404).json({
         error: { code: "NOT_FOUND", message: "Course not found", requestId: req.id },
       });
     }
 
-    if (req.user?.role !== "admin" && String(course.instructorId) !== String(req.user?._id)) {
+    if (req.user?.role !== "admin" && course.instructorId !== req.user?.id) {
       return res.status(403).json({
         error: { code: "FORBIDDEN", message: "You are not the instructor of this course", requestId: req.id },
       });
     }
 
-    const lesson = await LessonModel.findById(parsed.lessonId);
+    const lesson = isUuid(parsed.lessonId) ? await prisma.lesson.findFirst({ where: { id: parsed.lessonId, courseId: course.id } }) : null;
     if (!lesson) {
       return res.status(404).json({
         error: { code: "NOT_FOUND", message: "Lesson not found", requestId: req.id },
@@ -100,11 +100,7 @@ uploadsRouter.post(
     );
 
     // Save initial status
-    lesson.video = {
-      status: "uploaded",
-      rawUploadKey: key,
-    };
-    await lesson.save();
+    await prisma.lesson.update({ where: { id: lesson.id }, data: { video: { status: "uploaded", rawUploadKey: key } } });
 
     res.status(200).json({
       uploadId,
@@ -148,10 +144,16 @@ uploadsRouter.post(
   async (req: Request, res: Response) => {
     const parsed = CompleteUploadSchema.parse(req.body);
 
-    const lesson = await LessonModel.findById(parsed.lessonId);
+    // the caller must own the course the lesson belongs to (this endpoint used to skip that check)
+    const lesson = isUuid(parsed.lessonId) && isUuid(parsed.courseId) ? await prisma.lesson.findFirst({ where: { id: parsed.lessonId, courseId: parsed.courseId }, include: { course: true } }) : null;
     if (!lesson) {
       return res.status(404).json({
         error: { code: "NOT_FOUND", message: "Lesson not found", requestId: req.id },
+      });
+    }
+    if (req.user?.role !== "admin" && lesson.course.instructorId !== req.user?.id) {
+      return res.status(403).json({
+        error: { code: "FORBIDDEN", message: "You are not the instructor of this course", requestId: req.id },
       });
     }
 
@@ -164,12 +166,10 @@ uploadsRouter.post(
     );
 
     // Update lesson
-    lesson.video = {
-      ...lesson.video,
-      status: "uploaded",
-      rawUploadKey: parsed.key,
-    };
-    await lesson.save();
+    await prisma.lesson.update({
+      where: { id: lesson.id },
+      data: { video: { ...((lesson.video as Record<string, unknown> | null) ?? {}), status: "uploaded", rawUploadKey: parsed.key } },
+    });
 
     // Enqueue transcode job
     const job = await enqueueVideoTranscode({

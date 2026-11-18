@@ -1,0 +1,5 @@
+# Run api, worker and web on the host (pnpm) while postgres, redis, minio, cdn and mailpit stay in Docker:
+#   docker compose -f docker-compose.yml -f docker-compose.native.yml up -d postgres redis minio minio-init cdn mailpit livekit
+services:
+  cdn:
+    ports: ["127.0.0.1:8090:80"]
