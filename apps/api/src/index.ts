@@ -18,7 +18,7 @@ async function main(): Promise<void> {
   // Setup Socket.IO with Redis adapter
   const io = new SocketIOServer(server, {
     cors: {
-      origin: ["http://localhost", "http://localhost:3000", "http://127.0.0.1", "http://127.0.0.1:3000"],
+      origin: config.corsOrigins,
       credentials: true,
     },
   });

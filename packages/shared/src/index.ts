@@ -18,7 +18,8 @@ export const RegisterRequestSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  role: UserRoleSchema.default("student"),
+  // admin accounts are never self-service
+  role: z.enum(["student", "instructor"]).default("student"),
 });
 export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
 
@@ -145,6 +146,8 @@ export interface Playback {
   isCompleted: boolean;
   durationSeconds: number;
   renditions: string[];
+  /** WebVTT caption files, when the API provides any */
+  captions?: { src: string; label: string; lang?: string }[];
 }
 
 // --- Quizzes ---

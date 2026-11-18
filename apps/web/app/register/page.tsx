@@ -6,7 +6,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRegisterMutation } from "../../store/apiSlice";
-import type { UserRole } from "@learnly/shared";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -14,7 +13,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<UserRole>("student");
+  const [role, setRole] = useState<"student" | "instructor">("student");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [registerTrigger, { isLoading }] = useRegisterMutation();
@@ -96,7 +95,7 @@ export default function RegisterPage() {
             <label className="block font-label-sm text-label-sm text-ink-secondary mb-1">
               Account Role
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setRole("student")}
@@ -118,17 +117,6 @@ export default function RegisterPage() {
                 }`}
               >
                 Instructor
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole("admin")}
-                className={`py-2 px-3 rounded-lg text-sm font-medium border text-center transition-all ${
-                  role === "admin"
-                    ? "border-primary bg-primary/10 text-primary font-bold"
-                    : "border-border bg-canvas text-ink-secondary hover:text-ink"
-                }`}
-              >
-                Admin
               </button>
             </div>
           </div>

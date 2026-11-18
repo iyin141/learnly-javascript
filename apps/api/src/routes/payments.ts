@@ -50,7 +50,7 @@ paymentsRouter.post("/courses/:id/checkout", authenticate, async (req: Request, 
   try {
     session = await provider.createSession({
       paymentId: payment.id, amountCents: course.priceCents, courseTitle: course.title, email: req.user!.email,
-      returnUrl: `${config.webOrigin}/courses/${course.id}`,
+      returnUrl: `${config.webBaseUrl}/courses/${course.id}?payment=${payment.id}`,
     });
   } catch (e) {
     // gateway down or misconfigured: do not leave a payment hanging as pending, and tell the client it is retryable

@@ -116,6 +116,9 @@ services:
       PAYMENT_CURRENCY: ${PAYMENT_CURRENCY:-usd}
       PLATFORM_FEE_BPS: ${PLATFORM_FEE_BPS:-1000}
       WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost}
+      WEB_BASE_URL: ${WEB_BASE_URL:-}
+      MAIL_FROM: ${MAIL_FROM:-Learnly <no-reply@learnly.local>}
+      ALLOW_MOCK_PAYMENTS: ${ALLOW_MOCK_PAYMENTS:-}
       REDIS_URL: redis://redis:6379
       S3_ENDPOINT: http://minio:9000
       S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT:-http://localhost:9010}

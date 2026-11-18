@@ -5,6 +5,11 @@ import { prisma, type User as DbUser } from "../db.js";
 import { generateAccessToken, createRefreshToken, authenticate } from "../middleware/auth.js";
 import { authRateLimiter } from "../middleware/rate-limiter.js";
 import { AppError } from "../middleware/error-handler.js";
+import { z } from "zod";
+import { config } from "../config.js";
+import { logger } from "../logger.js";
+import { emailQueue } from "../services/queue.js";
+import { signResetToken, readResetToken, resetTokenMatches } from "../services/reset-token.js";
 
 export const authRouter = Router();
 
@@ -147,4 +152,44 @@ authRouter.post("/logout", async (req: Request, res: Response) => {
 
 authRouter.get("/me", authenticate, (req: Request, res: Response) => {
   res.json({ user: formatUser(req.user!) });
+});
+
+// POST /api/auth/forgot - always 204, whether or not the address has an account (no enumeration)
+authRouter.post("/forgot", authRateLimiter, async (req: Request, res: Response) => {
+  const { email } = z.object({ email: z.string().email() }).parse(req.body);
+  res.status(204).end();
+  // work happens after the response so timing does not reveal whether the account exists
+  try {
+    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+    if (!user) return;
+    const link = `${config.webBaseUrl}/reset-password?token=${encodeURIComponent(signResetToken(user))}`;
+    await emailQueue.add("email", {
+      to: user.email,
+      subject: "Reset your Learnly password",
+      text: `Hi ${user.name},
+
+Use this link to choose a new password. It works once and expires in 30 minutes:
+${link}
+
+If you did not ask for this, ignore this email.`,
+    });
+  } catch (err) {
+    logger.error({ err }, "password reset email failed");
+  }
+});
+
+// POST /api/auth/reset - { token, password }
+authRouter.post("/reset", authRateLimiter, async (req: Request, res: Response) => {
+  const { token, password } = z.object({ token: z.string().min(10), password: RegisterRequestSchema.shape.password }).parse(req.body);
+  const parsed = readResetToken(token);
+  const user = parsed ? await prisma.user.findUnique({ where: { id: parsed.userId } }) : null;
+  if (!parsed || !user || !resetTokenMatches(parsed.fp, user.passwordHash)) {
+    throw new AppError(400, "INVALID_RESET_TOKEN", "This reset link is invalid or has expired. Request a new one.");
+  }
+  const passwordHash = await bcrypt.hash(password, await bcrypt.genSalt(10));
+  // conditional on the old hash: two uses of the same link cannot both win
+  const hit = await prisma.user.updateMany({ where: { id: user.id, passwordHash: user.passwordHash }, data: { passwordHash } });
+  if (hit.count !== 1) throw new AppError(400, "INVALID_RESET_TOKEN", "This reset link is invalid or has expired. Request a new one.");
+  await prisma.refreshToken.updateMany({ where: { userId: user.id }, data: { revoked: true } });
+  res.status(204).end();
 });

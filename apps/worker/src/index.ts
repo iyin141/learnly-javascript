@@ -75,7 +75,7 @@ async function startWorker() {
     },
     {
       connection,
-      concurrency: parseInt(process.env.WORKER_CONCURRENCY || "1", 10),
+      concurrency: parseInt(process.env.WORKER_CONCURRENCY || process.env.FFMPEG_CONCURRENCY || "1", 10),
     }
   );
 

@@ -2,7 +2,6 @@
 
 import { Img } from "@/components/Img";
 import React, { useEffect, useState } from "react";
-import Link from "next/navigation";
 import NextLink from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "../store";
@@ -53,7 +52,7 @@ export function AppShell({ children, activeNav }: AppShellProps) {
   const secondaryNavItems = [{ label: "Certificates", href: "/certificates", icon: "verified" }];
 
   // Full-screen routes render without the shell: live room (dark stage) and auth pages.
-  if (/^\/live\/[^/]+/.test(pathname ?? "") || pathname === "/login" || pathname === "/register") {
+  if (/^\/live\/[^/]+/.test(pathname ?? "") || pathname === "/login" || pathname === "/register" || pathname === "/forgot-password" || pathname === "/reset-password") {
     return <>{children}</>;
   }
 
@@ -65,13 +64,6 @@ export function AppShell({ children, activeNav }: AppShellProps) {
         {/* Brand Header */}
         <div className="h-16 px-space-md flex items-center justify-between">
           <div className="flex items-center gap-space-sm">
-            <button
-              className="p-space-xs text-ink-secondary hover:text-ink hover:bg-canvas rounded-lg transition-colors"
-              type="button"
-              aria-label="Toggle menu"
-            >
-              <span className="material-symbols-outlined text-[24px]">menu</span>
-            </button>
             <NextLink href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-lg">
                 <Img name="logo" alt="" className="w-full h-full object-cover rounded-[inherit]" fallback={<>L</>} />
@@ -108,12 +100,9 @@ export function AppShell({ children, activeNav }: AppShellProps) {
 
             {/* Enrolled Courses Quicklinks */}
             <div className="pt-space-sm">
-              <div className="flex items-center justify-between px-space-md py-space-xs cursor-pointer group">
-                <span className="font-label-sm text-label-sm text-ink-secondary uppercase tracking-wider font-semibold group-hover:text-ink">
+              <div className="px-space-md py-space-xs">
+                <span className="font-label-sm text-label-sm text-ink-secondary uppercase tracking-wider font-semibold">
                   Enrolled
-                </span>
-                <span className="material-symbols-outlined text-[18px] text-ink-secondary group-hover:text-ink">
-                  expand_more
                 </span>
               </div>
               <div className="mt-space-xs flex flex-col gap-space-xs">
@@ -155,23 +144,8 @@ export function AppShell({ children, activeNav }: AppShellProps) {
       {/* Main Content Area (offset by 280px on desktop) */}
       <div className="md:pl-[280px] flex-1 flex flex-col min-h-screen pb-16 md:pb-0">
         {/* Top Header Bar */}
-        <header className="sticky top-0 h-16 bg-card/80 backdrop-blur-xl border-b border-border z-40 px-margin-sm md:px-margin flex items-center justify-between">
-          {/* Search bar */}
-          <div className="flex items-center gap-space-md flex-1 max-w-md">
-            <div className="relative w-full">
-              <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-ink-secondary text-[20px]">
-                search
-              </span>
-              <input
-                aria-label="Search courses, lessons and topics"
-                className="w-full pl-10 pr-space-md py-space-xs bg-canvas rounded-full font-body-md text-body-md text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary transition-all"
-                placeholder="Search courses, lessons, topics..."
-                type="text"
-              />
-            </div>
-          </div>
+        <header className="sticky top-0 h-16 bg-card/80 backdrop-blur-xl border-b border-border z-40 px-margin-sm md:px-margin flex items-center justify-end">
 
-          {/* Right Header Actions */}
           <div className="flex items-center gap-space-sm md:gap-space-md">
             <NextLink
               href={user?.role === "instructor" || user?.role === "admin" ? "/instructor/courses?new=1" : user ? "/live" : "/login"}
@@ -180,15 +154,6 @@ export function AppShell({ children, activeNav }: AppShellProps) {
               <span className="material-symbols-outlined text-[18px]">add</span>
               <span>Create or Join</span>
             </NextLink>
-
-            <button
-              className="p-space-xs text-ink-secondary hover:text-ink hover:bg-canvas rounded-full transition-colors relative"
-              type="button"
-              aria-label="Notifications"
-            >
-              <span className="material-symbols-outlined text-[24px]">notifications</span>
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-danger ring-2 ring-card"></span>
-            </button>
 
             {/* User Profile / Menu */}
             {user ? (

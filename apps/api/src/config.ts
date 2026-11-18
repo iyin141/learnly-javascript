@@ -1,5 +1,14 @@
 import path from "node:path";
 
+function corsOrigins(): string[] {
+  const out: string[] = [];
+  for (const raw of (process.env.WEB_ORIGIN || "").split(",")) {
+    try { if (raw.trim()) out.push(new URL(raw.trim()).origin); } catch { /* ignore a malformed entry */ }
+  }
+  if (process.env.NODE_ENV !== "production") out.push("http://localhost", "http://localhost:3000", "http://127.0.0.1", "http://127.0.0.1:3000");
+  return out;
+}
+
 export const config = {
   port: parseInt(process.env.PORT || "4000", 10),
   redisUrl: process.env.REDIS_URL || "redis://127.0.0.1:6379",
@@ -33,6 +42,10 @@ export const config = {
     },
   },
   webOrigin: process.env.WEB_ORIGIN || "http://localhost:3000",
+  /** origins allowed by CORS and socket.io: WEB_ORIGIN, plus localhost only outside production */
+  corsOrigins: corsOrigins(),
+  /** public origin + base path (e.g. https://host/learnly-js); used in links sent to users */
+  webBaseUrl: (process.env.WEB_BASE_URL || process.env.WEB_ORIGIN || "http://localhost:3000").replace(/\/+$/, ""),
   payments: {
     provider: (process.env.PAYMENT_PROVIDER || "mock") as "mock" | "stripe" | "paystack",
     paystackSecret: process.env.PAYSTACK_SECRET_KEY || "",

@@ -18,6 +18,7 @@ export default function InstructorCourseBuilderPage({
   const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingStatus, setSavingStatus] = useState(false);
+  const [statusError, setStatusError] = useState("");
 
   const fetchCourseData = async () => {
     try {
@@ -39,16 +40,20 @@ export default function InstructorCourseBuilderPage({
   }, [courseId]);
 
   const handleTogglePublish = async () => {
-    if (!course) return;
+    if (!course || course.status === "published") return;
     setSavingStatus(true);
+    setStatusError("");
     const newStatus = "in_review"; // instructors submit; an admin approves (see /admin/courses)
     try {
       const res = await authFetch(`/api/instructor/courses/${courseId}/submit`, { method: "POST" });
       if (res.ok) {
         setCourse((prev: any) => ({ ...prev, status: newStatus }));
+      } else {
+        const body = await res.json().catch(() => null);
+        setStatusError(body?.error?.message ?? "Could not submit the course for review");
       }
     } catch (err) {
-      console.error("Failed to update course status", err);
+      setStatusError("Could not submit the course for review");
     } finally {
       setSavingStatus(false);
     }
@@ -107,10 +112,10 @@ export default function InstructorCourseBuilderPage({
             </Link>
             <button
               onClick={handleTogglePublish}
-              disabled={savingStatus}
+              disabled={savingStatus || course?.status === "published"}
               className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full font-label-md text-sm font-semibold transition-colors ${
                 course?.status === "published"
-                  ? "bg-slate-200 text-ink hover:bg-slate-300"
+                  ? "bg-slate-200 text-ink cursor-default"
                   : "bg-primary text-white hover:bg-primary-hover shadow-sm"
               }`}
             >
@@ -119,6 +124,8 @@ export default function InstructorCourseBuilderPage({
             </button>
           </div>
         </div>
+
+        {statusError && <p role="alert" className="text-danger text-sm">{statusError}</p>}
 
         {/* Course Builder Component */}
         <CourseBuilder

@@ -10,7 +10,9 @@ import { useLoginMutation } from "../../store/apiSlice";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextUrl = searchParams.get("next") || "/";
+  const rawNext = searchParams.get("next") || "/";
+  // same-site paths only: one leading slash, no "//" or backslash (open redirect), no scheme
+  const nextUrl = rawNext.startsWith("/") && !rawNext.startsWith("//") && !rawNext.includes("\\") ? rawNext : "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -80,6 +82,10 @@ function LoginForm() {
           />
         </div>
 
+        <div className="text-right -mt-1">
+          <Link href="/forgot-password" className="text-sm text-primary hover:underline">Forgot password?</Link>
+        </div>
+
         <button
           type="submit"
           disabled={isLoading}
@@ -89,7 +95,8 @@ function LoginForm() {
         </button>
       </form>
 
-      {/* Demo Roles Quick Fill */}
+      {/* Demo Roles Quick Fill (off unless NEXT_PUBLIC_DEMO_LOGINS=1 at build time) */}
+      {process.env.NEXT_PUBLIC_DEMO_LOGINS === "1" && (
       <div className="pt-space-sm border-t border-border">
         <span className="font-caption text-caption text-ink-secondary block text-center mb-2">
           Quick demo credentials:
@@ -118,6 +125,7 @@ function LoginForm() {
           </button>
         </div>
       </div>
+      )}
 
       <div className="text-center font-body-md text-sm text-ink-secondary">
         Don&apos;t have an account?{" "}

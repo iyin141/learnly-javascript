@@ -11,7 +11,9 @@ COPY packages/shared packages/shared
 RUN pnpm --filter @learnly/shared build
 COPY apps/web apps/web
 ARG NEXT_BASE_PATH=""
-ENV NEXT_BASE_PATH=$NEXT_BASE_PATH NEXT_PUBLIC_BASE_PATH=$NEXT_BASE_PATH NEXT_TELEMETRY_DISABLED=1
+# NEXT_PUBLIC_DEMO_LOGINS=1 shows the demo-credential buttons on /login; leave empty in production
+ARG NEXT_PUBLIC_DEMO_LOGINS=""
+ENV NEXT_BASE_PATH=$NEXT_BASE_PATH NEXT_PUBLIC_BASE_PATH=$NEXT_BASE_PATH NEXT_PUBLIC_DEMO_LOGINS=$NEXT_PUBLIC_DEMO_LOGINS NEXT_TELEMETRY_DISABLED=1
 RUN pnpm --filter @learnly/web build
 
 FROM node:22-slim

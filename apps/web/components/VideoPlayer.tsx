@@ -30,6 +30,7 @@ export function VideoPlayer({ lessonId, title, onEnded, onCompleted }: Props) {
   const [level, setLevel] = useState(-1);
   const [menu, setMenu] = useState(false);
   const [captions, setCaptions] = useState(false);
+  const captionTracks = data?.captions ?? [];
   const url = data?.playbackUrl ? withBase(data.playbackUrl) : undefined;           // the API returns a root-relative /cdn/... URL
   const resumeAt = useRef(0);
   if (data && !resumeAt.current) resumeAt.current = data.lastPositionSeconds > 5 ? data.lastPositionSeconds : 0;
@@ -133,8 +134,7 @@ export function VideoPlayer({ lessonId, title, onEnded, onCompleted }: Props) {
           if (videoRef.current) void saveProgress({ lessonId, positionSeconds: Math.floor(videoRef.current.duration) });
           onEnded?.();
         }}>
-        {/* captions slot: a real <track src> is added once the API exposes caption files */}
-        {captions && <track kind="captions" label="English" />}
+        {captions && captionTracks.map((t) => <track key={t.src} kind="captions" src={withBase(t.src)} label={t.label} srcLang={t.lang} default />)}
       </video>
       <div className="px-space-md pt-space-sm">
         <input type="range" min={0} max={duration || 1} step={1} value={time} aria-label="Seek"
@@ -166,7 +166,7 @@ export function VideoPlayer({ lessonId, title, onEnded, onCompleted }: Props) {
             </ul>
           )}
         </div>
-        <button className={btn} aria-pressed={captions} onClick={() => setCaptions(!captions)} aria-label="Captions"><span className="material-symbols-outlined">closed_caption</span></button>
+        {captionTracks.length > 0 && <button className={btn} aria-pressed={captions} onClick={() => setCaptions(!captions)} aria-label="Captions"><span className="material-symbols-outlined">closed_caption</span></button>}
         <button className={btn} aria-label="Fullscreen" onClick={() => void wrapRef.current?.requestFullscreen()}><span className="material-symbols-outlined">fullscreen</span></button>
       </div>
     </div>

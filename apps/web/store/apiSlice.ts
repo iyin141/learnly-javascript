@@ -53,6 +53,13 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
   return result;
 };
 
+export type CoursePeople = {
+  instructor: { id: string; name: string; avatarUrl?: string } | null;
+  total: number;
+  detailed: boolean;
+  students: { id: string; name: string; avatarUrl?: string; enrolledAt: string; email?: string; progressPercent?: number; status?: string }[];
+};
+
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
@@ -87,6 +94,12 @@ export const apiSlice = createApi({
       },
       invalidatesTags: ["User", "MyCourses"],
     }),
+    forgotPassword: builder.mutation<void, { email: string }>({
+      query: (body) => ({ url: "/auth/forgot", method: "POST", body }),
+    }),
+    resetPassword: builder.mutation<void, { token: string; password: string }>({
+      query: (body) => ({ url: "/auth/reset", method: "POST", body }),
+    }),
     logout: builder.mutation<{ message: string }, void>({
       query: () => ({
         url: "/auth/logout",
@@ -114,6 +127,10 @@ export const apiSlice = createApi({
       query: (id) => `/courses/${id}`,
       providesTags: (_result, _error, id) => [{ type: "Course", id }],
     }),
+    getCoursePeople: builder.query<CoursePeople, string>({
+      query: (id) => `/courses/${id}/people`,
+      providesTags: (_result, _error, id) => [{ type: "Course", id }],
+    }),
     enrollCourse: builder.mutation<{ message: string; enrolment: Enrolment }, string>({
       query: (courseId) => ({
         url: `/courses/${courseId}/enroll`,
@@ -124,6 +141,10 @@ export const apiSlice = createApi({
     checkoutCourse: builder.mutation<{ status: "paid" | "pending"; paymentId: string; checkoutUrl?: string; provider: string }, string>({
       query: (courseId) => ({ url: `/courses/${courseId}/checkout`, method: "POST" }),
       invalidatesTags: (_result, _error, id) => ["MyCourses", { type: "Course", id }],
+    }),
+    verifyPayment: builder.mutation<{ status: string }, string>({
+      query: (paymentId) => ({ url: `/payments/${paymentId}/verify`, method: "POST" }),
+      invalidatesTags: ["MyCourses", "Course"],
     }),
     getMyCourses: builder.query<
       {
@@ -246,6 +267,10 @@ export const apiSlice = createApi({
       query: () => "/admin/reports",
     }),
 
+    getQueueStats: builder.query<{ stats: Record<string, Record<string, number>> }, void>({
+      query: () => "/admin/queues/stats",
+    }),
+
     // Live
     getLiveSessions: builder.query<{ sessions: LiveSessionInfo[] }, void>({
       query: () => "/live",
@@ -295,6 +320,7 @@ export const {
   useSaveProgressMutation,
   useMarkCompleteMutation,
   useGetCourseQuizzesQuery,
+  useGetCoursePeopleQuery,
   useGetQuizQuery,
   useStartAttemptMutation,
   useSaveAnswerMutation,
@@ -313,6 +339,7 @@ export const {
   useGetAdminCoursesQuery,
   useDecideCourseMutation,
   useGetAdminReportsQuery,
+  useGetQueueStatsQuery,
   useGetLiveSessionsQuery,
   useGetLiveSessionQuery,
   useStartLiveSessionMutation,
@@ -327,10 +354,13 @@ export const {
   useLoginMutation,
   useRegisterMutation,
   useLogoutMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
   useGetMeQuery,
   useGetCoursesQuery,
   useGetCourseQuery,
   useEnrollCourseMutation,
   useCheckoutCourseMutation,
+  useVerifyPaymentMutation,
   useGetMyCoursesQuery,
 } = apiSlice;

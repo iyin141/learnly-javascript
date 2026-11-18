@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useCreateQuizMutation, useGetInstructorCoursesQuery } from "../../../store/apiSlice";
+import { useCreateQuizMutation, useGetInstructorCoursesQuery, useGetCourseQuizzesQuery, useGetQuizAnalyticsQuery } from "../../../store/apiSlice";
 
 interface Q {
   prompt: string;
@@ -12,8 +12,53 @@ interface Q {
 const blank = (): Q => ({ prompt: "", options: ["", "", "", ""], correct: 0, explanation: "" });
 const letter = (i: number) => String.fromCharCode(97 + i);
 
+const pct = (v: number | null | undefined) => (v == null ? "n/a" : `${Math.round(v * 100)}%`);
+
+function Analytics({ quizId }: { quizId: string }) {
+  const { data, isLoading, isError } = useGetQuizAnalyticsQuery(quizId);
+  if (isLoading) return <div className="h-16 rounded-lg bg-border animate-pulse" />;
+  if (isError || !data) return <p role="alert" className="text-danger text-sm">Could not load analytics.</p>;
+  if (data.attempts === 0) return <p className="text-ink-secondary text-sm">No submitted attempts yet.</p>;
+  return (
+    <div className="flex flex-col gap-space-sm text-sm">
+      <p>{data.attempts} attempts, pass rate {pct(data.passRate)}, average score {data.avgScorePercent == null ? "n/a" : `${Math.round(data.avgScorePercent)}%`}</p>
+      <ul className="flex flex-col gap-1">
+        {data.perQuestion.map((q) => (
+          <li key={q.questionId} className="flex justify-between gap-space-sm"><span className="truncate">{q.prompt}</span><span className="shrink-0 text-ink-secondary">{q.answered} answered, {pct(q.correctRate)} correct</span></li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function CourseQuizzes({ course }: { course: { id: string; code: string; title: string } }) {
+  const { data, isLoading, isError } = useGetCourseQuizzesQuery(course.id);
+  const [open, setOpen] = useState<string | null>(null);
+  const quizzes = data?.quizzes ?? [];
+  return (
+    <section className="bg-card rounded-xl border border-border p-space-md flex flex-col gap-space-sm">
+      <h3 className="font-label-md font-semibold">{course.code}: {course.title}</h3>
+      {isLoading && <div className="h-10 rounded-lg bg-border animate-pulse" />}
+      {isError && <p role="alert" className="text-danger text-sm">Could not load quizzes for this course.</p>}
+      {!isLoading && !isError && quizzes.length === 0 && <p className="text-ink-secondary text-sm">No quizzes yet.</p>}
+      {quizzes.map((q) => (
+        <div key={q.id} className="bg-canvas rounded-lg p-space-sm flex flex-col gap-space-sm">
+          <div className="flex items-center justify-between gap-space-sm">
+            <span>
+              <span className="block font-label-md">{q.title}</span>
+              <span className="block font-caption text-caption text-ink-secondary">{q.questionCount} questions, {q.timeLimitMinutes} min, pass {q.passMarkPercent}%</span>
+            </span>
+            <button type="button" aria-expanded={open === q.id} onClick={() => setOpen(open === q.id ? null : q.id)} className="min-h-11 px-space-md rounded-full border border-border text-sm">{open === q.id ? "Hide analytics" : "Analytics"}</button>
+          </div>
+          {open === q.id && <Analytics quizId={q.id} />}
+        </div>
+      ))}
+    </section>
+  );
+}
+
 export default function QuizBuilderPage() {
-  const { data } = useGetInstructorCoursesQuery();
+  const { data, isLoading: coursesLoading, isError: coursesError } = useGetInstructorCoursesQuery();
   const [create, { isLoading, isSuccess, error }] = useCreateQuizMutation();
   const [courseId, setCourseId] = useState("");
   const [title, setTitle] = useState("");
@@ -45,8 +90,16 @@ export default function QuizBuilderPage() {
   };
 
   return (
-    <form onSubmit={submit} className="p-margin-sm md:p-margin max-w-3xl flex flex-col gap-space-md">
-      <h1 className="font-headline-lg text-headline-lg">New quiz</h1>
+    <div className="p-margin-sm md:p-margin max-w-3xl flex flex-col gap-space-lg">
+    <section className="flex flex-col gap-space-md">
+      <h1 className="font-headline-lg text-headline-lg">Your quizzes</h1>
+      {coursesLoading && <div className="h-24 rounded-xl bg-border animate-pulse" />}
+      {coursesError && <p role="alert" className="text-danger">Could not load your courses.</p>}
+      {!coursesLoading && !coursesError && (data?.courses ?? []).length === 0 && <p className="bg-card rounded-xl border border-border p-space-lg text-center text-ink-secondary">You have no courses yet. Create a course before adding quizzes.</p>}
+      {(data?.courses ?? []).map((c) => <CourseQuizzes key={c.id} course={c} />)}
+    </section>
+    <form onSubmit={submit} className="flex flex-col gap-space-md">
+      <h2 className="font-headline-md text-headline-md">New quiz</h2>
       <label className="flex flex-col gap-1">
         Course
         <select className={field} value={courseId} onChange={(e) => setCourseId(e.target.value)}>
@@ -74,7 +127,8 @@ export default function QuizBuilderPage() {
       <button type="button" onClick={() => setQs([...qs, blank()])} className="min-h-11 rounded-full border border-border">Add question</button>
       {msg && <p role="alert" className="text-danger">{msg}</p>}
       {isSuccess && <p role="status" className="text-success">Quiz created.</p>}
-      <button disabled={isLoading} className="min-h-11 rounded-full bg-primary text-white disabled:opacity-50">Create quiz</button>
+      <button disabled={isLoading || !(data?.courses ?? []).length} className="min-h-11 rounded-full bg-primary text-white disabled:opacity-50">Create quiz</button>
     </form>
+    </div>
   );
 }

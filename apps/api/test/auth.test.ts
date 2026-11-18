@@ -81,7 +81,7 @@ describe("API Auth and Health Suite", { timeout: 20000 }, () => {
     expect(body.user.role).toBe("instructor");
   });
 
-  it("POST /api/auth/register supports admin role", async () => {
+  it("POST /api/auth/register refuses the admin role", async () => {
     const email = `admin_${Date.now()}@test.learnly`;
     const res = await fetch(`${baseUrl}/api/auth/register`, {
       method: "POST",
@@ -94,9 +94,7 @@ describe("API Auth and Health Suite", { timeout: 20000 }, () => {
       }),
     });
 
-    expect(res.status).toBe(201);
-    const body = await res.json();
-    expect(body.user.role).toBe("admin");
+    expect(res.status).toBe(400);
   });
 
   it("POST /api/auth/login validates credentials and returns token", async () => {

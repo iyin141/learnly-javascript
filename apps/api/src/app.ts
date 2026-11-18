@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { pinoHttp } from "pino-http";
 import { logger } from "./logger.js";
+import { config } from "./config.js";
 import { requestIdMiddleware } from "./middleware/request-id.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { apiRateLimiter } from "./middleware/rate-limiter.js";
@@ -27,12 +28,7 @@ export function createApp(): express.Application {
   // Basic middleware
   app.use(
     cors({
-      origin: [
-        "http://localhost",
-        "http://localhost:3000",
-        "http://127.0.0.1",
-        "http://127.0.0.1:3000",
-      ],
+      origin: config.corsOrigins,
       credentials: true,
       exposedHeaders: ["X-Request-Id", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset", "Retry-After"],
     })

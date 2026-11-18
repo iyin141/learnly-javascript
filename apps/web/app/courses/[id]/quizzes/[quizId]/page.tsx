@@ -56,7 +56,7 @@ export default function QuizPage() {
         </section>
         <div className="flex gap-space-sm">
           <Link href={`/courses/${id}`} className="min-h-11 px-space-lg inline-flex items-center rounded-full bg-canvas border border-border">Back to course</Link>
-          {!result.passed && quiz.attemptsUsed + 1 < quiz.maxAttempts && (
+          {!result.passed && quiz.attemptsUsed < quiz.maxAttempts && (
             <button onClick={() => { setAttempt(null); setResult(null); }} className="min-h-11 px-space-lg rounded-full bg-primary text-white">Try again</button>
           )}
         </div>

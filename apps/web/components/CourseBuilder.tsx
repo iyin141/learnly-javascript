@@ -14,16 +14,18 @@ import {
   Loader2,
   AlertTriangle,
   Upload,
+  Pencil,
 } from "lucide-react";
 import { UploadProgress } from "./UploadProgress";
 import { ConfirmModal } from "./Modal";
 
 interface LessonData {
-  _id: string;
+  id: string;
   title: string;
   type: "video" | "text" | "file";
   order: number;
   durationSeconds: number;
+  textContent?: string;
   video?: {
     status: "uploaded" | "transcoding" | "ready" | "failed";
     durationSeconds?: number;
@@ -33,7 +35,7 @@ interface LessonData {
 }
 
 interface SectionData {
-  _id: string;
+  id: string;
   title: string;
   order: number;
   lessons: LessonData[];
@@ -45,9 +47,20 @@ interface CourseBuilderProps {
   onRefresh?: () => void;
 }
 
-// The course endpoint returns `id`; the builder endpoints return Mongo documents with `_id`. Accept both.
-const withIds = (secs: SectionData[]): SectionData[] =>
-  secs.map((s: any) => ({ ...s, _id: s._id ?? s.id, lessons: (s.lessons ?? []).map((l: any) => ({ ...l, _id: l._id ?? l.id })) }));
+// Every API route returns `id` (Postgres uuid); normalise a legacy `_id` once here so the rest of the file only uses `id`.
+const withIds = (secs: any[]): SectionData[] =>
+  secs.map((s) => ({ ...s, id: s.id ?? s._id, lessons: (s.lessons ?? []).map((l: any) => ({ ...l, id: l.id ?? l._id })) }));
+
+/** authFetch + JSON; throws an Error carrying the API's message so every caller can show it. */
+async function api<T = any>(path: string, method: string, body?: unknown): Promise<T> {
+  const res = await authFetch(path, {
+    method,
+    ...(body !== undefined ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {}),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(data?.error?.message ?? `Request failed (${res.status})`);
+  return data as T;
+}
 
 export const CourseBuilder: React.FC<CourseBuilderProps> = ({
   courseId,
@@ -55,6 +68,11 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
   onRefresh,
 }) => {
   const [sections, setSections] = useState<SectionData[]>(() => withIds(initialSections));
+  const [error, setError] = useState("");
+  const fail = (what: string, err: unknown) => setError(`${what}: ${err instanceof Error ? err.message : "unexpected error"}`);
+  const [editingSection, setEditingSection] = useState<{ id: string; title: string } | null>(null);
+  const [editingLesson, setEditingLesson] = useState<{ id: string; title: string; textContent: string; type: LessonData["type"] } | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [addingToSectionId, setAddingToSectionId] = useState<string | null>(null);
   const [newLessonTitle, setNewLessonTitle] = useState("");
@@ -75,21 +93,66 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
   const handleAddSection = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSectionTitle.trim()) return;
-
+    setError("");
     try {
-      const res = await authFetch(`/api/courses/${courseId}/sections`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: newSectionTitle.trim() }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setSections((prev) => [...prev, ...withIds([{ ...data.section, lessons: [] }])]);
-        setNewSectionTitle("");
-        if (onRefresh) onRefresh();
-      }
+      const data = await api(`/api/courses/${courseId}/sections`, "POST", { title: newSectionTitle.trim() });
+      setSections((prev) => [...prev, ...withIds([{ ...data.section, lessons: [] }])]);
+      setNewSectionTitle("");
+      if (onRefresh) onRefresh();
     } catch (err) {
-      console.error("Failed to add section", err);
+      fail("Could not add the section", err);
+    }
+  };
+
+  const saveSectionTitle = async () => {
+    if (!editingSection || !editingSection.title.trim()) return;
+    setSavingEdit(true);
+    setError("");
+    try {
+      const { section } = await api(`/api/courses/${courseId}/sections/${editingSection.id}`, "PUT", { title: editingSection.title.trim() });
+      setSections((prev) => prev.map((s) => (s.id === editingSection.id ? { ...s, title: section.title } : s)));
+      setEditingSection(null);
+    } catch (err) {
+      fail("Could not rename the section", err);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const saveLesson = async () => {
+    if (!editingLesson || !editingLesson.title.trim()) return;
+    setSavingEdit(true);
+    setError("");
+    try {
+      const { lesson } = await api(`/api/courses/${courseId}/lessons/${editingLesson.id}`, "PUT", {
+        title: editingLesson.title.trim(),
+        ...(editingLesson.type === "text" ? { textContent: editingLesson.textContent } : {}),
+      });
+      setSections((prev) => prev.map((s) => ({ ...s, lessons: s.lessons.map((l) => (l.id === editingLesson.id ? { ...l, title: lesson.title, textContent: lesson.textContent ?? undefined } : l)) })));
+      setEditingLesson(null);
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      fail("Could not save the lesson", err);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  /** Swap a lesson with its neighbour and persist the whole section's order through the batch /reorder route. */
+  const moveLesson = async (sectionId: string, index: number, dir: -1 | 1) => {
+    const sec = sections.find((s) => s.id === sectionId);
+    if (!sec || index + dir < 0 || index + dir >= sec.lessons.length) return;
+    const next = [...sec.lessons];
+    [next[index], next[index + dir]] = [next[index + dir], next[index]];
+    const before = sections;
+    setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, lessons: next } : s)));
+    setError("");
+    try {
+      await api(`/api/courses/${courseId}/reorder`, "PUT", { lessons: next.map((l, i) => ({ id: l.id, sectionId, order: i })) });
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      setSections(before);
+      fail("Could not reorder the lessons", err);
     }
   };
 
@@ -100,6 +163,7 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
   const confirmDelete = async () => {
     if (!pendingDelete) return;
     setDeleting(true);
+    setError("");
     try {
       if (pendingDelete.kind === "section") await performDeleteSection(pendingDelete.id);
       else await performDeleteLesson(pendingDelete.id, pendingDelete.sectionId!);
@@ -107,63 +171,39 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
   };
   const performDeleteSection = async (sectionId: string) => {
     try {
-      const res = await authFetch(`/api/courses/${courseId}/sections/${sectionId}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setSections((prev) => prev.filter((s) => s._id !== sectionId));
-        if (onRefresh) onRefresh();
-      }
+      await api(`/api/courses/${courseId}/sections/${sectionId}`, "DELETE");
+      setSections((prev) => prev.filter((s) => s.id !== sectionId));
+      if (onRefresh) onRefresh();
     } catch (err) {
-      console.error("Failed to delete section", err);
+      fail("Could not delete the section", err);
     }
   };
 
   const handleAddLesson = async (sectionId: string) => {
     if (!newLessonTitle.trim()) return;
+    setError("");
     try {
-      const res = await authFetch(`/api/courses/${courseId}/sections/${sectionId}/lessons`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: newLessonTitle.trim(),
-          type: newLessonType,
-          durationSeconds: 0,
-        }),
+      const { lesson } = await api(`/api/courses/${courseId}/sections/${sectionId}/lessons`, "POST", {
+        title: newLessonTitle.trim(),
+        type: newLessonType,
+        durationSeconds: 0,
       });
-      if (res.ok) {
-        const { lesson } = await res.json();
-        setSections((prev) =>
-          prev.map((s) =>
-            s._id === sectionId ? { ...s, lessons: [...(s.lessons || []), { ...lesson, _id: lesson._id ?? lesson.id }] } : s
-          )
-        );
-        setNewLessonTitle("");
-        setAddingToSectionId(null);
-        if (onRefresh) onRefresh();
-      }
+      setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, lessons: [...(s.lessons || []), lesson] } : s)));
+      setNewLessonTitle("");
+      setAddingToSectionId(null);
+      if (onRefresh) onRefresh();
     } catch (err) {
-      console.error("Failed to add lesson", err);
+      fail("Could not add the lesson", err);
     }
   };
 
   const performDeleteLesson = async (lessonId: string, sectionId: string) => {
     try {
-      const res = await authFetch(`/api/courses/${courseId}/lessons/${lessonId}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setSections((prev) =>
-          prev.map((s) =>
-            s._id === sectionId
-              ? { ...s, lessons: s.lessons.filter((l) => l._id !== lessonId) }
-              : s
-          )
-        );
-        if (onRefresh) onRefresh();
-      }
+      await api(`/api/courses/${courseId}/lessons/${lessonId}`, "DELETE");
+      setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, lessons: s.lessons.filter((l) => l.id !== lessonId) } : s)));
+      if (onRefresh) onRefresh();
     } catch (err) {
-      console.error("Failed to delete lesson", err);
+      fail("Could not delete the lesson", err);
     }
   };
 
@@ -189,11 +229,13 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
         </div>
       </div>
 
+      {error && <p role="alert" className="p-3 rounded-lg bg-red-50 border border-red-200 text-danger text-sm">{error}</p>}
+
       {/* Sections List */}
       <div className="space-y-4">
         {sections.map((section, sIndex) => (
           <div
-            key={section._id || sIndex}
+            key={section.id || sIndex}
             className="bg-card border border-border rounded-card p-5 shadow-sm"
           >
             <div className="flex items-center justify-between mb-4">
@@ -201,7 +243,15 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
                 <span className="w-7 h-7 rounded-lg bg-primary/10 text-primary font-bold text-sm flex items-center justify-center">
                   {sIndex + 1}
                 </span>
-                <h3 className="font-title-md text-base font-bold text-ink">{section.title}</h3>
+                {editingSection?.id === section.id ? (
+                  <form className="flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); void saveSectionTitle(); }}>
+                    <input aria-label="Section title" autoFocus value={editingSection.title} onChange={(e) => setEditingSection({ id: section.id, title: e.target.value })} className="px-2 py-1 text-sm bg-card border border-border rounded-lg text-ink focus:outline-none focus:border-primary" />
+                    <button type="submit" disabled={savingEdit} className="px-2 py-1 text-xs font-semibold bg-primary text-white rounded-lg disabled:opacity-50">Save</button>
+                    <button type="button" onClick={() => setEditingSection(null)} className="px-2 py-1 text-xs text-ink-secondary">Cancel</button>
+                  </form>
+                ) : (
+                  <h3 className="font-title-md text-base font-bold text-ink">{section.title}</h3>
+                )}
                 <span className="text-xs text-ink-secondary">
                   ({section.lessons?.length || 0} lessons)
                 </span>
@@ -209,7 +259,16 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
               <div className="flex items-center gap-1">
                 <button
                   type="button"
-                  onClick={() => handleDeleteSection(section._id)}
+                  onClick={() => setEditingSection({ id: section.id, title: section.title })}
+                  className="p-1.5 text-ink-secondary hover:text-primary rounded-lg hover:bg-slate-100 transition-colors"
+                  title="Rename Section"
+                  aria-label="Rename section"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteSection(section.id)}
                   className="p-1.5 text-ink-secondary hover:text-accent-coral rounded-lg hover:bg-slate-100 transition-colors"
                   title="Delete Section"
                 >
@@ -223,7 +282,7 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
               {section.lessons && section.lessons.length > 0 ? (
                 section.lessons.map((lesson, lIndex) => (
                   <div
-                    key={lesson._id || lIndex}
+                    key={lesson.id || lIndex}
                     className="flex flex-col gap-2 p-3 bg-canvas/70 rounded-xl border border-slate-100"
                   >
                     <div className="flex items-center justify-between">
@@ -279,14 +338,23 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
                               type="file"
                               accept="video/mp4,video/quicktime,video/webm"
                               className="hidden"
-                              onChange={(e) => handleVideoSelect(section._id, lesson._id, e)}
+                              onChange={(e) => handleVideoSelect(section.id, lesson.id, e)}
                             />
                           </label>
                         )}
 
+                        <button type="button" disabled={lIndex === 0} onClick={() => void moveLesson(section.id, lIndex, -1)} className="p-1 text-ink-secondary hover:text-primary rounded hover:bg-slate-100 disabled:opacity-30" aria-label="Move lesson up" title="Move up">
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        </button>
+                        <button type="button" disabled={lIndex === section.lessons.length - 1} onClick={() => void moveLesson(section.id, lIndex, 1)} className="p-1 text-ink-secondary hover:text-primary rounded hover:bg-slate-100 disabled:opacity-30" aria-label="Move lesson down" title="Move down">
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </button>
+                        <button type="button" onClick={() => setEditingLesson({ id: lesson.id, title: lesson.title, textContent: lesson.textContent ?? "", type: lesson.type })} className="p-1 text-ink-secondary hover:text-primary rounded hover:bg-slate-100" aria-label="Edit lesson" title="Edit lesson">
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
                         <button
                           type="button"
-                          onClick={() => handleDeleteLesson(lesson._id, section._id)}
+                          onClick={() => handleDeleteLesson(lesson.id, section.id)}
                           className="p-1 text-ink-secondary hover:text-accent-coral rounded hover:bg-slate-100"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -294,12 +362,29 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
                       </div>
                     </div>
 
+                    {editingLesson?.id === lesson.id && (
+                      <div className="flex flex-col gap-2 p-3 bg-card border border-border rounded-lg">
+                        <label className="text-xs text-ink-secondary">Title
+                          <input value={editingLesson.title} onChange={(e) => setEditingLesson({ ...editingLesson, title: e.target.value })} className="mt-1 w-full px-3 py-1.5 text-sm bg-canvas border border-border rounded-lg text-ink focus:outline-none focus:border-primary" />
+                        </label>
+                        {editingLesson.type === "text" && (
+                          <label className="text-xs text-ink-secondary">Lesson text
+                            <textarea rows={10} value={editingLesson.textContent} onChange={(e) => setEditingLesson({ ...editingLesson, textContent: e.target.value })} className="mt-1 w-full px-3 py-2 text-sm bg-canvas border border-border rounded-lg text-ink focus:outline-none focus:border-primary" />
+                          </label>
+                        )}
+                        <div className="flex justify-end gap-2">
+                          <button type="button" onClick={() => setEditingLesson(null)} className="px-3 py-1 text-xs text-ink-secondary hover:text-ink">Cancel</button>
+                          <button type="button" disabled={savingEdit} onClick={() => void saveLesson()} className="px-3 py-1 text-xs font-semibold bg-primary text-white rounded-lg disabled:opacity-50">{savingEdit ? "Saving..." : "Save lesson"}</button>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Active Upload progress bar if this lesson is uploading */}
                     {activeUploadLesson &&
-                      activeUploadLesson.lessonId === lesson._id && (
+                      activeUploadLesson.lessonId === lesson.id && (
                         <UploadProgress
                           courseId={courseId}
-                          lessonId={lesson._id}
+                          lessonId={lesson.id}
                           file={activeUploadLesson.file}
                           onSuccess={() => {
                             if (onRefresh) onRefresh();
@@ -316,7 +401,7 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
             </div>
 
             {/* Add Lesson Form or Trigger */}
-            {addingToSectionId === section._id ? (
+            {addingToSectionId === section.id ? (
               <div className="p-3 bg-canvas rounded-xl border border-border flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   <input
@@ -349,7 +434,7 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleAddLesson(section._id)}
+                    onClick={() => handleAddLesson(section.id)}
                     className="px-3 py-1 text-xs font-semibold bg-primary text-white rounded-lg hover:bg-primary-hover"
                   >
                     Add Lesson
@@ -359,7 +444,7 @@ export const CourseBuilder: React.FC<CourseBuilderProps> = ({
             ) : (
               <button
                 type="button"
-                onClick={() => setAddingToSectionId(section._id)}
+                onClick={() => setAddingToSectionId(section.id)}
                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary-hover py-1"
               >
                 <Plus className="w-3.5 h-3.5" />

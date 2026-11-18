@@ -99,6 +99,7 @@ adminRouter.post("/instructor/courses/:id/submit", requireAuth, requireRole("ins
   const c = await prisma.course.findUnique({ where: { id: oid(req.params.id) } });
   if (!c) throw new AppError(404, "NOT_FOUND", "Course not found");
   if (req.user!.role !== "admin" && c.instructorId !== req.user!.id) throw new AppError(403, "FORBIDDEN", "Not your course");
+  if (c.status === "published") throw new AppError(409, "ALREADY_PUBLISHED", "This course is already published");
   const u = await prisma.course.update({ where: { id: c.id }, data: { status: "in_review" } });
   res.json({ id: u.id, status: u.status });
 });

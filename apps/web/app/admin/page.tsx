@@ -13,7 +13,7 @@ export default function AdminHome() {
         {items.map(([h, l]) => (
           <Link key={h} href={`/admin/${h}`} className="min-h-11 bg-card rounded-xl border border-border p-space-md hover:border-primary">{l}</Link>
         ))}
-        <a href={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/api/admin/queues/stats`} className="min-h-11 bg-card rounded-xl border border-border p-space-md hover:border-primary">Job queue stats (JSON)</a>
+        <Link href="/admin/queues" className="min-h-11 bg-card rounded-xl border border-border p-space-md hover:border-primary">Job queues</Link>
       </div>
     </div>
   );

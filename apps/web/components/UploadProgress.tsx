@@ -74,34 +74,34 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
         if (!urlsRes.ok) throw new Error("Failed to get presigned part URLs");
         const { parts: partUrls } = await urlsRes.json();
 
-        // 3. Upload parts in parallel (chunk size 5MB)
+        // 3. Upload parts, PARALLEL_PARTS at a time (each worker takes the next unclaimed part)
+        const PARALLEL_PARTS = 3;
         const completedParts: Array<{ PartNumber: number; ETag: string }> = [];
         let bytesUploaded = 0;
+        let next = 0;
 
-        for (const { partNumber, url } of partUrls) {
-          if (isCancelled) return;
+        const worker = async () => {
+          while (!isCancelled && next < partUrls.length) {
+            const { partNumber, url } = partUrls[next++];
+            const start = (partNumber - 1) * partSize;
+            const chunk = file.slice(start, Math.min(file.size, start + partSize));
 
-          const start = (partNumber - 1) * partSize;
-          const end = Math.min(file.size, start + partSize);
-          const chunk = file.slice(start, end);
+            const putRes = await fetch(url, { method: "PUT", body: chunk });
+            if (!putRes.ok) throw new Error(`Failed to upload part ${partNumber}`);
 
-          setStatusText(`Uploading chunk ${partNumber} of ${totalParts}...`);
+            // the bucket's CORS rule must expose the ETag header; without it the upload cannot be completed
+            const etag = putRes.headers.get("ETag");
+            if (!etag) throw new Error("The storage server did not expose the ETag header (check the bucket CORS ExposeHeaders setting)");
+            completedParts.push({ PartNumber: partNumber, ETag: etag });
 
-          const putRes = await fetch(url, {
-            method: "PUT",
-            body: chunk,
-          });
-
-          if (!putRes.ok) {
-            throw new Error(`Failed to upload part ${partNumber}`);
+            bytesUploaded += chunk.size;
+            setProgress(Math.round((bytesUploaded / file.size) * 100));
+            setStatusText(`Uploaded ${completedParts.length} of ${totalParts} parts...`);
           }
-
-          const etag = putRes.headers.get("ETag") || `"${partNumber}"`;
-          completedParts.push({ PartNumber: partNumber, ETag: etag });
-
-          bytesUploaded += chunk.size;
-          setProgress(Math.round((bytesUploaded / file.size) * 100));
-        }
+        };
+        await Promise.all(Array.from({ length: Math.min(PARALLEL_PARTS, partUrls.length) }, worker));
+        if (isCancelled) return;
+        completedParts.sort((x, y) => x.PartNumber - y.PartNumber);
 
         // 4. Complete multipart upload
         if (isCancelled) return;
