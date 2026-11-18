@@ -21,7 +21,7 @@ server {
         if ($secure_link = "")  { return 403; }
         if ($secure_link = "0") { return 410; }
 
-        rewrite ^/cdn/(.*)$ /learnly-media/$1 break;
+        rewrite ^/cdn/(.*)$ /${CDN_MEDIA_BUCKET}/$1 break;
         proxy_pass http://minio:9000;
         proxy_set_header Host minio:9000;
         proxy_cache cdn;
@@ -41,7 +41,7 @@ server {
         if ($secure_link = "")  { return 403; }
         if ($secure_link = "0") { return 410; }
 
-        rewrite ^/cdn/(.*)$ /learnly-media/$1 break;
+        rewrite ^/cdn/(.*)$ /${CDN_MEDIA_BUCKET}/$1 break;
         proxy_pass http://minio:9000;
         proxy_set_header Host minio:9000;
 
@@ -64,7 +64,7 @@ server {
 
     # Thumbnails and posters are public images
     location /cdn/thumbs/ {
-        rewrite ^/cdn/(.*)$ /learnly-media/$1 break;
+        rewrite ^/cdn/(.*)$ /${CDN_MEDIA_BUCKET}/$1 break;
         proxy_pass http://minio:9000;
         proxy_set_header Host minio:9000;
         proxy_cache cdn;

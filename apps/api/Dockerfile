@@ -1,5 +1,7 @@
 # Base image node:22-slim is already present locally; pnpm and the npm packages are fetched at build time.
 FROM node:22-slim AS builder
+# openssl must be here too: prisma generate picks the query engine for the openssl it finds (3.0 on this base once it is installed)
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 RUN npm install -g pnpm@9.15.9
 
@@ -19,6 +21,8 @@ RUN pnpm --filter @learnly/api build
 FROM node:22-slim
 WORKDIR /app
 ENV NODE_ENV=production
+# the start command runs pnpm (migrations) and Prisma needs openssl
+RUN npm install -g pnpm@9.15.9 && apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY --from=builder --chown=node:node /app /app
 USER node
 EXPOSE 4000
